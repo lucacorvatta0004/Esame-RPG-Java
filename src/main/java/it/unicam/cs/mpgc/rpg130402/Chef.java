@@ -41,4 +41,25 @@ public class Chef {
         System.out.println("MAESTRIA: " + this.maestria);
         System.out.println("---------------------------------");
     }
+    // L'azione per usare uno strumento
+    public void equipaggia(Equipaggiamento oggetto) {
+        this.velocita += oggetto.getBonusVelocita();
+        this.maestria += oggetto.getBonusMaestria();
+        System.out.println(this.nome + " ha equipaggiato: " + oggetto.getNomeOggetto() + "!");
+    }
+
+    // provo a preparare il piatto (è il nostro equivalente del combattimento)
+    public void cucina(Comanda ordine) {
+        // chiedo alla comanda quanta maestria serve
+        int sfida = ordine.getMaestriaRichiesta();
+
+        System.out.println("\n" + this.nome + " inizia a preparare " + ordine.getNomePiatto() + "...");
+
+        // check sulle stats: se ne ho abbastanza vinco, altrimenti brucio tutto
+        if (this.maestria >= sfida) {
+            System.out.println("SUCCESSO! " + ordine.getNomePiatto() + " cucinato alla perfezione.");
+        } else {
+            System.out.println("DISASTRO! Piatto bruciato. Ho solo " + this.maestria + " di maestria, me ne serviva " + sfida + ".");
+        }
+    }
 }

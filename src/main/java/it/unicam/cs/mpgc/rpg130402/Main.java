@@ -4,16 +4,24 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("=== BATTLE OF THE BRIGATA ===\n");
 
-        // creo un pg di test per vedere se la classe Chef funziona
+        // 1. Creo lo Chef
         Chef giocatore = new Chef("Luca", "Capo Partita");
 
-        System.out.println("Situazione iniziale:");
+        // 2. Creo l'equipaggiamento e lo assegno allo Chef
+        Equipaggiamento coltelloChef = new Equipaggiamento("Coltello in Ceramica", 10, 15);
+        giocatore.equipaggia(coltelloChef);
+
         giocatore.mostraStatistiche();
 
-        // simulo di aver passato il primo livello
-        giocatore.saliDiLivello();
+        // 3. Arrivano i "Nemici" (Le comande)
+        Comanda facile = new Comanda("Spaghetti al Pomodoro", 1);
+        Comanda difficile = new Comanda("Filetto alla Wellington", 4);
 
-        System.out.println("\nDopo il servizio:");
-        giocatore.mostraStatistiche();
+        // 4. Inizia il servizio (Il Combattimento)
+        facile.mostraDettagli();
+        giocatore.cucina(facile); // Il giocatore vince facilmente
+
+        difficile.mostraDettagli();
+        giocatore.cucina(difficile); // Serve un livello più alto per vincerla!
     }
 }
