@@ -9,7 +9,8 @@ public class Chef {
     // stats che crescono giocando
     private int livello;
     private int velocita;
-    private int maestria; // se è alta, sbaglio meno piatti
+    private int maestria;// se è alta, sbaglio meno piatti
+    private int reputazione; // i "punti vita" dello chef
 
     // setup iniziale quando creo il pg
     public Chef(String nome, String ruolo) {
@@ -20,6 +21,7 @@ public class Chef {
         this.livello = 1;
         this.velocita = 10;
         this.maestria = 10;
+        this.reputazione = 3; // parto con 3 vite
     }
 
     // da chiamare quando si finisce uno stage
@@ -48,9 +50,8 @@ public class Chef {
         System.out.println(this.nome + " ha equipaggiato: " + oggetto.getNomeOggetto() + "!");
     }
 
-    // provo a preparare il piatto (è il nostro equivalente del combattimento)
+    // provo a preparare il piatto
     public void cucina(Comanda ordine) {
-        // chiedo alla comanda quanta maestria serve
         int sfida = ordine.getMaestriaRichiesta();
 
         System.out.println("\n" + this.nome + " inizia a preparare " + ordine.getNomePiatto() + "...");
@@ -60,6 +61,15 @@ public class Chef {
             System.out.println("SUCCESSO! " + ordine.getNomePiatto() + " cucinato alla perfezione.");
         } else {
             System.out.println("DISASTRO! Piatto bruciato. Ho solo " + this.maestria + " di maestria, me ne serviva " + sfida + ".");
+
+            // perdo un punto vita
+            this.reputazione = this.reputazione - 1;
+            System.out.println("Attenzione! Reputazione scesa a: " + this.reputazione);
+
+            // controllo se il giocatore ha perso
+            if (this.reputazione == 0) {
+                System.out.println("GAME OVER! Hai bruciato troppi piatti, sei stato licenziato.");
+            }
         }
     }
 }
