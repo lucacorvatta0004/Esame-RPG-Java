@@ -4,24 +4,23 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("=== BATTLE OF THE BRIGATA ===\n");
 
-        // 1. Creo lo Chef
+        // 1. Setup del giocatore
         Chef giocatore = new Chef("Luca", "Capo Partita");
-
-        // 2. Creo l'equipaggiamento e lo assegno allo Chef
         Equipaggiamento coltelloChef = new Equipaggiamento("Coltello in Ceramica", 10, 15);
         giocatore.equipaggia(coltelloChef);
 
         giocatore.mostraStatistiche();
 
-        // 3. Arrivano i "Nemici" (Le comande)
-        Comanda facile = new Comanda("Spaghetti al Pomodoro", 1);
-        Comanda difficile = new Comanda("Filetto alla Wellington", 4);
+        // 2. Preparo il menu della serata (Fase 3)
+        Menu menuDelGiorno = new Menu();
 
-        // 4. Inizia il servizio (Il Combattimento)
-        facile.mostraDettagli();
-        giocatore.cucina(facile); // Il giocatore vince facilmente
+        System.out.println("\n--- INIZIO SERVIZIO ---");
 
-        difficile.mostraDettagli();
-        giocatore.cucina(difficile); // Serve un livello più alto per vincerla!
+        // 3. Invece di scrivere il piatto, me lo faccio dare a caso dal Menu!
+        Comanda ordineTavolo1 = menuDelGiorno.estraiComandaCasuale();
+
+        // 4. Mostro l'ordine ed evado la comanda
+        ordineTavolo1.mostraDettagli();
+        giocatore.cucina(ordineTavolo1);
     }
 }
