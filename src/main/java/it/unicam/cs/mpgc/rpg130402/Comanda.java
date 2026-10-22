@@ -1,24 +1,36 @@
 package it.unicam.cs.mpgc.rpg130402;
 
+import java.util.ArrayList;
+
 public class Comanda {
-    private String nomePiatto;
-    private int difficoltaStelle;
+    private int numeroTavolo;
+    // la lista della spesa che contiene tutti i piatti di questo tavolo
+    private ArrayList<Piatto> piattiOrdinati;
 
-    public Comanda(String nomePiatto, int difficoltaStelle) {
-        this.nomePiatto = nomePiatto;
-        this.difficoltaStelle = difficoltaStelle;
+    public Comanda(int numeroTavolo) {
+        this.numeroTavolo = numeroTavolo;
+        this.piattiOrdinati = new ArrayList<>(); // preparo la scatola vuota
     }
 
-    public String getNomePiatto() { return nomePiatto; }
-    public int getDifficoltaStelle() { return difficoltaStelle; }
-
-    // traduco le stelle in un punteggio numerico vero per il check con la maestria
-    public int getMaestriaRichiesta() {
-        return difficoltaStelle * 10;
+    // metodo semplice per aggiungere un piatto alla lista
+    public void aggiungiPiatto(Piatto p) {
+        this.piattiOrdinati.add(p);
     }
 
-    // debug per far capire al giocatore i requisiti
-    public void mostraDettagli() {
-        System.out.println("Nuova Comanda: " + nomePiatto + " | Difficolta': " + difficoltaStelle + " stelle (Richiede " + getMaestriaRichiesta() + " maestria)");
+    public ArrayList<Piatto> getPiattiOrdinati() {
+        return this.piattiOrdinati;
+    }
+
+    public int getNumeroTavolo() {
+        return this.numeroTavolo;
+    }
+
+    public void stampaScontrino() {
+        System.out.println("\n=== ORDINE TAVOLO " + this.numeroTavolo + " ===");
+        // ciclo for scolastico per stampare tutto quello che c'è nella lista
+        for (int i = 0; i < this.piattiOrdinati.size(); i++) {
+            Piatto piattoCorrente = this.piattiOrdinati.get(i);
+            piattoCorrente.mostraDettagli();
+        }
     }
 }

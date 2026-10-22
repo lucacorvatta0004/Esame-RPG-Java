@@ -1,75 +1,89 @@
 package it.unicam.cs.mpgc.rpg130402;
 
-public class Chef {
+import java.util.ArrayList;
 
-    // anagrafica e ruolo scelto all'inizio
+public class Chef {
     private String nome;
     private String ruolo;
-
-    // stats che crescono giocando
     private int livello;
     private int velocita;
-    private int maestria;// se è alta, sbaglio meno piatti
-    private int reputazione; // i "punti vita" dello chef
+    private int maestria;
+    private int reputazione;
+    private Equipaggiamento strumentoEquipaggiato;
 
-    // setup iniziale quando creo il pg
     public Chef(String nome, String ruolo) {
         this.nome = nome;
         this.ruolo = ruolo;
-
-        // si parte dal basso
         this.livello = 1;
         this.velocita = 10;
         this.maestria = 10;
-        this.reputazione = 3; // parto con 3 vite
+        this.reputazione = 3;
     }
 
-    // da chiamare quando si finisce uno stage
-    public void saliDiLivello() {
-        this.livello++;
-        this.velocita += 5; // TODO: bilanciare se 5 è troppo
-        this.maestria += 5;
-
-        System.out.println("\n*** LEVEL UP! " + this.nome + " e' ora di livello " + this.livello + "! ***");
+    public void equipaggia(Equipaggiamento oggetto) {
+        this.strumentoEquipaggiato = oggetto;
+        System.out.println(this.nome + " ha equipaggiato: " + oggetto.getNomeOggetto() + "!");
     }
 
-    // debug per vedere se le stats si aggiornano bene
+    public int getMaestriaTotale() {
+        if (this.strumentoEquipaggiato != null) {
+            return this.maestria + this.strumentoEquipaggiato.getBonusMaestria();
+        } else {
+            return this.maestria;
+        }
+    }
+
     public void mostraStatistiche() {
         System.out.println("---------------------------------");
         System.out.println("NOME: " + this.nome);
         System.out.println("RUOLO: " + this.ruolo);
         System.out.println("LIVELLO: " + this.livello);
         System.out.println("VELOCITA': " + this.velocita);
-        System.out.println("MAESTRIA: " + this.maestria);
+        System.out.println("MAESTRIA: " + getMaestriaTotale());
+        System.out.println("REPUTAZIONE: " + this.reputazione + " vite");
         System.out.println("---------------------------------");
     }
-    // L'azione per usare uno strumento
-    public void equipaggia(Equipaggiamento oggetto) {
-        this.velocita += oggetto.getBonusVelocita();
-        this.maestria += oggetto.getBonusMaestria();
-        System.out.println(this.nome + " ha equipaggiato: " + oggetto.getNomeOggetto() + "!");
-    }
 
-    // provo a preparare il piatto
-    public void cucina(Comanda ordine) {
-        int sfida = ordine.getMaestriaRichiesta();
+    public void cucina(Comanda ordineTavolo) {
+        System.out.println("\n" + this.nome + " inizia a preparare il Tavolo " + ordineTavolo.getNumeroTavolo() + "...");
 
-        System.out.println("\n" + this.nome + " inizia a preparare " + ordine.getNomePiatto() + "...");
+        ArrayList<Piatto> piatti = ordineTavolo.getPiattiOrdinati();
+        int maestriaEffettiva = getMaestriaTotale();
 
-        // check sulle stats: se ne ho abbastanza vinco, altrimenti brucio tutto
-        if (this.maestria >= sfida) {
-            System.out.println("SUCCESSO! " + ordine.getNomePiatto() + " cucinato alla perfezione.");
-        } else {
-            System.out.println("DISASTRO! Piatto bruciato. Ho solo " + this.maestria + " di maestria, me ne serviva " + sfida + ".");
+        // counter per i piatti andati a buon fine
+        int piattiConsegnati = 0;
 
-            // perdo un punto vita
-            this.reputazione = this.reputazione - 1;
-            System.out.println("Attenzione! Reputazione scesa a: " + this.reputazione);
+        // scorro la lista dei piatti ordinati
+        for (int i = 0; i < piatti.size(); i++) {
+            Piatto piattoCorrente = piatti.get(i);
+            int sfida = piattoCorrente.getMaestriaRichiesta();
 
-            // controllo se il giocatore ha perso
-            if (this.reputazione == 0) {
-                System.out.println("GAME OVER! Hai bruciato troppi piatti, sei stato licenziato.");
+            System.out.println("\n-> Preparo: " + piattoCorrente.getNomePiatto());
+
+            // check maestria vs difficolta'
+            if (maestriaEffettiva >= sfida) {
+                System.out.println("SUCCESSO! Piatto riuscito.");
+                piattiConsegnati = piattiConsegnati + 1; // aggiorno il counter
+            } else {
+                System.out.println("DISASTRO! Piatto bruciato. (Serve " + sfida + " maestria, hai " + maestriaEffettiva + ")");
+                this.reputazione = this.reputazione - 1;
+                System.out.println("Attenzione! Reputazione scesa a: " + this.reputazione);
+
+                // se perdo tutte le vite blocco il gioco
+                if (this.reputazione <= 0) {
+                    System.out.println("\nGAME OVER! Hai bruciato troppi piatti, sei stato licenziato.");
+                    return; // forza l'uscita dal metodo
+                }
             }
+        }
+
+        System.out.println("\nServizio per il Tavolo " + ordineTavolo.getNumeroTavolo() + " completato!");
+
+        // feedback finale del tavolo a fine ciclo
+        if (piattiConsegnati == piatti.size()) {
+            System.out.println("I clienti sono entusiasti! Hanno ricevuto tutti i piatti in modo perfetto.");
+        } else {
+            System.out.println("I clienti sono FURIOSI! Hanno ricevuto solo " + piattiConsegnati + " piatti su " + piatti.size() + " e lasciano una recensione pessima!");
         }
     }
 }

@@ -1,40 +1,39 @@
 package it.unicam.cs.mpgc.rpg130402;
 
 import java.util.ArrayList;
-import java.util.Random; // importo il random base di java
+import java.util.Random;
 
 public class Menu {
+    private ArrayList<Piatto> listaPiatti;
 
-    // lista base per tenere tutte le comande possibili
-    private ArrayList<Comanda> listaPiatti;
-
-    // costruttore
     public Menu() {
-        // inizializzo la lista vuota
         this.listaPiatti = new ArrayList<>();
-        // riempio il menu chiamando il metodo qui sotto
-        caricaMenuBase();
+
+        // popolo il menu con dei piatti base
+        this.listaPiatti.add(new Piatto("Spaghetti al Pomodoro", 1));
+        this.listaPiatti.add(new Piatto("Carbonara", 2));
+        this.listaPiatti.add(new Piatto("Risotto ai Funghi", 3));
+        this.listaPiatti.add(new Piatto("Filetto alla Wellington", 4));
+        this.listaPiatti.add(new Piatto("Soufflé al Cioccolato", 5));
     }
 
-    // metodo semplice per aggiungere i piatti a mano all'inizio
-    private void caricaMenuBase() {
-        this.listaPiatti.add(new Comanda("Spaghetti al Pomodoro", 1));
-        this.listaPiatti.add(new Comanda("Carbonara", 2));
-        this.listaPiatti.add(new Comanda("Risotto ai Funghi", 3));
-        this.listaPiatti.add(new Comanda("Filetto alla Wellington", 4));
-        this.listaPiatti.add(new Comanda("Souffle' al Cioccolato", 5));
-    }
-
-    // estrae una comanda a caso per il servizio
-    public Comanda estraiComandaCasuale() {
+    // estrae un singolo piatto casuale dal menu
+    public Piatto estraiPiattoCasuale() {
         Random generatore = new Random();
-
-        // prendo un numero a caso tra 0 e la grandezza attuale della lista
         int indiceRandom = generatore.nextInt(this.listaPiatti.size());
+        return this.listaPiatti.get(indiceRandom);
+    }
 
-        // recupero il piatto a quell'indice e lo salvo in una variabile d'appoggio
-        Comanda piattoScelto = this.listaPiatti.get(indiceRandom);
+    // genera un tavolo (Comanda) con un numero N di piatti casuali
+    public Comanda generaComandaCasuale(int numeroTavolo, int numeroPiatti) {
+        Comanda nuovaComanda = new Comanda(numeroTavolo);
 
-        return piattoScelto;
+        // ciclo for per aggiungere i piatti uno alla volta
+        for (int i = 0; i < numeroPiatti; i++) {
+            Piatto piattoEstratto = estraiPiattoCasuale();
+            nuovaComanda.aggiungiPiatto(piattoEstratto);
+        }
+
+        return nuovaComanda;
     }
 }
