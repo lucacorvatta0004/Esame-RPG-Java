@@ -43,6 +43,21 @@ public class Chef {
         System.out.println("REPUTAZIONE: " + this.reputazione + " vite");
         System.out.println("---------------------------------");
     }
+    // getter per il salvataggio
+    public String getNome() { return this.nome; }
+    public String getRuolo() { return this.ruolo; }
+    public int getLivello() { return this.livello; }
+    public int getVelocita() { return this.velocita; }
+    public int getMaestriaBase() { return this.maestria; } // la maestria senza armi
+    public int getReputazione() { return this.reputazione; }
+
+    // metodo per forzare le stats quando carico il file di salvataggio
+    public void setStatisticheSalvate(int livello, int velocita, int maestria, int reputazione) {
+        this.livello = livello;
+        this.velocita = velocita;
+        this.maestria = maestria;
+        this.reputazione = reputazione;
+    }
 
     public void cucina(Comanda ordineTavolo) {
         System.out.println("\n" + this.nome + " inizia a preparare il Tavolo " + ordineTavolo.getNumeroTavolo() + "...");
@@ -72,7 +87,7 @@ public class Chef {
                 // se perdo tutte le vite blocco il gioco
                 if (this.reputazione <= 0) {
                     System.out.println("\nGAME OVER! Hai bruciato troppi piatti, sei stato licenziato.");
-                    return; // forza l'uscita dal metodo
+                    System.exit(0); // <-- chiude istantaneamente l'intero programma Java!
                 }
             }
         }
