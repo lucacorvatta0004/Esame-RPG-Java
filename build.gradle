@@ -3,11 +3,17 @@ plugins {
     id 'application'
 }
 
-group = 'it.unicam.cs.mpgc.rpg130402'
+group = 'it.unicam.cs.mpgc'
 version = '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
 }
 
 dependencies {
@@ -21,4 +27,8 @@ test {
 
 application {
     mainClass = 'it.unicam.cs.mpgc.rpg130402.Main'
+}
+
+run {
+    standardInput = System.in
 }
