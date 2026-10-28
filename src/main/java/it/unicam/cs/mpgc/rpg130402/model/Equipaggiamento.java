@@ -1,4 +1,4 @@
-package it.unicam.cs.mpgc.rpg130402;
+package it.unicam.cs.mpgc.rpg130402.model;
 
 public class Equipaggiamento {
     private String nomeOggetto;

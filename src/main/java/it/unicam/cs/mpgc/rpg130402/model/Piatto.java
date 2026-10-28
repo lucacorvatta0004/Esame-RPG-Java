@@ -1,4 +1,4 @@
-package it.unicam.cs.mpgc.rpg130402;
+package it.unicam.cs.mpgc.rpg130402.model;
 
 public class Piatto {
     private String nomePiatto;

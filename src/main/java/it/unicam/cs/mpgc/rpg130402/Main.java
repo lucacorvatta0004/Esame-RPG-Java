@@ -1,5 +1,10 @@
 package it.unicam.cs.mpgc.rpg130402;
 
+import it.unicam.cs.mpgc.rpg130402.model.Chef;
+import it.unicam.cs.mpgc.rpg130402.model.Comanda;
+import it.unicam.cs.mpgc.rpg130402.model.Equipaggiamento;
+import it.unicam.cs.mpgc.rpg130402.model.Menu;
+
 import java.util.Scanner;
 
 public class Main {

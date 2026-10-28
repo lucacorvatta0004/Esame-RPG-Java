@@ -1,5 +1,7 @@
 package it.unicam.cs.mpgc.rpg130402;
 
+import it.unicam.cs.mpgc.rpg130402.model.Chef;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
