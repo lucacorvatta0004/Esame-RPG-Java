@@ -5,6 +5,8 @@ public class Piatto {
     private int difficoltaStelle;
 
     public Piatto(String nomePiatto, int difficoltaStelle) {
+        Validazione.verificaTestoNonVuoto(nomePiatto, "Il nome del piatto");
+        Validazione.verificaIntervallo(difficoltaStelle, 1, 5, "La difficoltà in stelle del piatto");
         this.nomePiatto = nomePiatto;
         this.difficoltaStelle = difficoltaStelle;
     }

@@ -26,6 +26,7 @@ public class Menu {
 
     // genera un tavolo (Comanda) con un numero N di piatti casuali
     public Comanda generaComandaCasuale(int numeroTavolo, int numeroPiatti) {
+        Validazione.verificaAlmeno(numeroPiatti, 1, "Il numero di piatti della comanda");
         Comanda nuovaComanda = new Comanda(numeroTavolo);
 
         // ciclo for per aggiungere i piatti uno alla volta

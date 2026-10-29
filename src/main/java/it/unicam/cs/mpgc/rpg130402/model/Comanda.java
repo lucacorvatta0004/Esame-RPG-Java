@@ -8,6 +8,7 @@ public class Comanda {
     private ArrayList<Piatto> piattiOrdinati;
 
     public Comanda(int numeroTavolo) {
+        Validazione.verificaAlmeno(numeroTavolo, 1, "Il numero del tavolo");
         this.numeroTavolo = numeroTavolo;
         this.piattiOrdinati = new ArrayList<>(); // preparo la scatola vuota
     }

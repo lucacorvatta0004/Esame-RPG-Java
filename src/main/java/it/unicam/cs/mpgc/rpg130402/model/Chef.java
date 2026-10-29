@@ -12,6 +12,8 @@ public class Chef {
     private Equipaggiamento strumentoEquipaggiato;
 
     public Chef(String nome, String ruolo) {
+        Validazione.verificaTestoNonVuoto(nome, "Il nome dello chef");
+        Validazione.verificaTestoNonVuoto(ruolo, "Il ruolo dello chef");
         this.nome = nome;
         this.ruolo = ruolo;
         this.livello = 1;
@@ -53,6 +55,10 @@ public class Chef {
 
     // metodo per forzare le stats quando carico il file di salvataggio
     public void setStatisticheSalvate(int livello, int velocita, int maestria, int reputazione) {
+        Validazione.verificaAlmeno(livello, 1, "Il livello");
+        Validazione.verificaAlmeno(velocita, 0, "La velocità");
+        Validazione.verificaAlmeno(maestria, 0, "La maestria");
+        Validazione.verificaIntervallo(reputazione, 0, 3, "La reputazione");
         this.livello = livello;
         this.velocita = velocita;
         this.maestria = maestria;
