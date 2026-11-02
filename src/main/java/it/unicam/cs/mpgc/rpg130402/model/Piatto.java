@@ -1,8 +1,8 @@
 package it.unicam.cs.mpgc.rpg130402.model;
 
 public class Piatto {
-    private String nomePiatto;
-    private int difficoltaStelle;
+    private final String nomePiatto;
+    private final int difficoltaStelle;
 
     public Piatto(String nomePiatto, int difficoltaStelle) {
         Validazione.verificaTestoNonVuoto(nomePiatto, "Il nome del piatto");

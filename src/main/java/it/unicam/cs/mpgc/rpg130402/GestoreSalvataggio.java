@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.Scanner;
 
 public class GestoreSalvataggio {
-    private String nomeFile = "salvataggio.txt";
+    private final String nomeFile = "salvataggio.txt";
 
     public void salvaPartita(Chef giocatore) {
         try {

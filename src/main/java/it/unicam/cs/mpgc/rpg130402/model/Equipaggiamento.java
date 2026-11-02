@@ -1,9 +1,9 @@
 package it.unicam.cs.mpgc.rpg130402.model;
 
 public class Equipaggiamento {
-    private String nomeOggetto;
-    private int bonusVelocita;
-    private int bonusMaestria;
+    private final String nomeOggetto;
+    private final int bonusVelocita;
+    private final int bonusMaestria;
 
     // Costruttore
     public Equipaggiamento(String nomeOggetto, int bonusVelocita, int bonusMaestria) {

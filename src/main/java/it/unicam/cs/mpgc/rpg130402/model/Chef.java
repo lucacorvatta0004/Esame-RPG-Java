@@ -1,10 +1,10 @@
 package it.unicam.cs.mpgc.rpg130402.model;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class Chef {
-    private String nome;
-    private String ruolo;
+    private final String nome;
+    private final String ruolo;
     private int livello;
     private int velocita;
     private int maestria;
@@ -68,7 +68,7 @@ public class Chef {
     public void cucina(Comanda ordineTavolo) {
         System.out.println("\n" + this.nome + " inizia a preparare il Tavolo " + ordineTavolo.getNumeroTavolo() + "...");
 
-        ArrayList<Piatto> piatti = ordineTavolo.getPiattiOrdinati();
+        List<Piatto> piatti = ordineTavolo.getPiattiOrdinati();
         int maestriaEffettiva = getMaestriaTotale();
 
         // counter per i piatti andati a buon fine

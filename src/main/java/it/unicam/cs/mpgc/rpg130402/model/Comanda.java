@@ -1,11 +1,13 @@
 package it.unicam.cs.mpgc.rpg130402.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class Comanda {
-    private int numeroTavolo;
+    private final int numeroTavolo;
     // la lista della spesa che contiene tutti i piatti di questo tavolo
-    private ArrayList<Piatto> piattiOrdinati;
+    private final List<Piatto> piattiOrdinati;
 
     public Comanda(int numeroTavolo) {
         Validazione.verificaAlmeno(numeroTavolo, 1, "Il numero del tavolo");
@@ -18,8 +20,8 @@ public class Comanda {
         this.piattiOrdinati.add(p);
     }
 
-    public ArrayList<Piatto> getPiattiOrdinati() {
-        return this.piattiOrdinati;
+    public List<Piatto> getPiattiOrdinati() {
+        return Collections.unmodifiableList(this.piattiOrdinati);
     }
 
     public int getNumeroTavolo() {
