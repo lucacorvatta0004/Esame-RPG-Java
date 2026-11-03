@@ -1,5 +1,6 @@
 package it.unicam.cs.mpgc.rpg130402.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Chef {
@@ -65,46 +66,30 @@ public class Chef {
         this.reputazione = reputazione;
     }
 
-    public void cucina(Comanda ordineTavolo) {
-        System.out.println("\n" + this.nome + " inizia a preparare il Tavolo " + ordineTavolo.getNumeroTavolo() + "...");
-
-        List<Piatto> piatti = ordineTavolo.getPiattiOrdinati();
+    /**
+     * Prepara i piatti della comanda nell'ordine in cui sono stati ordinati.
+     * Ogni piatto bruciato toglie un punto di reputazione; se lo chef viene licenziato
+     * il servizio si interrompe e i piatti rimanenti non vengono preparati.
+     */
+    public EsitoServizio cucina(Comanda ordineTavolo) {
         int maestriaEffettiva = getMaestriaTotale();
+        List<EsitoPiatto> esitiPiatti = new ArrayList<>();
 
-        // counter per i piatti andati a buon fine
-        int piattiConsegnati = 0;
-
-        // scorro la lista dei piatti ordinati
-        for (int i = 0; i < piatti.size(); i++) {
-            Piatto piattoCorrente = piatti.get(i);
-            int sfida = piattoCorrente.getMaestriaRichiesta();
-
-            System.out.println("\n-> Preparo: " + piattoCorrente.getNomePiatto());
-
-            // check maestria vs difficolta'
-            if (maestriaEffettiva >= sfida) {
-                System.out.println("SUCCESSO! Piatto riuscito.");
-                piattiConsegnati = piattiConsegnati + 1; // aggiorno il counter
-            } else {
-                System.out.println("DISASTRO! Piatto bruciato. (Serve " + sfida + " maestria, hai " + maestriaEffettiva + ")");
-                this.reputazione = this.reputazione - 1;
-                System.out.println("Attenzione! Reputazione scesa a: " + this.reputazione);
-
-                // se perdo tutte le vite blocco il gioco
-                if (this.reputazione <= 0) {
-                    System.out.println("\nGAME OVER! Hai bruciato troppi piatti, sei stato licenziato.");
-                    System.exit(0); // <-- chiude istantaneamente l'intero programma Java!
-                }
+        for (Piatto piatto : ordineTavolo.getPiattiOrdinati()) {
+            boolean riuscito = maestriaEffettiva >= piatto.getMaestriaRichiesta();
+            if (!riuscito) {
+                this.reputazione--;
+            }
+            esitiPiatti.add(new EsitoPiatto(piatto, riuscito, this.reputazione));
+            if (isLicenziato()) {
+                break;
             }
         }
 
-        System.out.println("\nServizio per il Tavolo " + ordineTavolo.getNumeroTavolo() + " completato!");
+        return new EsitoServizio(esitiPiatti, isLicenziato());
+    }
 
-        // feedback finale del tavolo a fine ciclo
-        if (piattiConsegnati == piatti.size()) {
-            System.out.println("I clienti sono entusiasti! Hanno ricevuto tutti i piatti in modo perfetto.");
-        } else {
-            System.out.println("I clienti sono FURIOSI! Hanno ricevuto solo " + piattiConsegnati + " piatti su " + piatti.size() + " e lasciano una recensione pessima!");
-        }
+    public boolean isLicenziato() {
+        return this.reputazione <= 0;
     }
 }
