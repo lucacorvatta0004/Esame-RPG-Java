@@ -24,6 +24,7 @@ public class Chef {
     }
 
     public void equipaggia(Equipaggiamento oggetto) {
+        Validazione.verificaNonNullo(oggetto, "L'equipaggiamento da equipaggiare");
         this.strumentoEquipaggiato = oggetto;
         System.out.println(this.nome + " ha equipaggiato: " + oggetto.getNomeOggetto() + "!");
     }
@@ -46,20 +47,24 @@ public class Chef {
         System.out.println("REPUTAZIONE: " + this.reputazione + " vite");
         System.out.println("---------------------------------");
     }
-    // getter per il salvataggio
+
     public String getNome() { return this.nome; }
     public String getRuolo() { return this.ruolo; }
     public int getLivello() { return this.livello; }
     public int getVelocita() { return this.velocita; }
-    public int getMaestriaBase() { return this.maestria; } // la maestria senza armi
+    public int getMaestriaBase() { return this.maestria; } // senza il bonus dell'equipaggiamento
     public int getReputazione() { return this.reputazione; }
 
-    // metodo per forzare le stats quando carico il file di salvataggio
+    /**
+     * Ripristina le statistiche lette da un salvataggio.
+     * La reputazione deve essere almeno 1: con 0 lo chef è licenziato (game over)
+     * e una partita finita non si può caricare.
+     */
     public void setStatisticheSalvate(int livello, int velocita, int maestria, int reputazione) {
         Validazione.verificaAlmeno(livello, 1, "Il livello");
         Validazione.verificaAlmeno(velocita, 0, "La velocità");
         Validazione.verificaAlmeno(maestria, 0, "La maestria");
-        Validazione.verificaIntervallo(reputazione, 0, 3, "La reputazione");
+        Validazione.verificaIntervallo(reputazione, 1, 3, "La reputazione salvata");
         this.livello = livello;
         this.velocita = velocita;
         this.maestria = maestria;

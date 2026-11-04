@@ -14,12 +14,11 @@ public class Piatto {
     public String getNomePiatto() { return nomePiatto; }
     public int getDifficoltaStelle() { return difficoltaStelle; }
 
-    // traduco le stelle in un punteggio numerico vero per il check con la maestria
+    /** Maestria minima che lo chef deve avere per non bruciare il piatto: 10 punti per stella. */
     public int getMaestriaRichiesta() {
         return difficoltaStelle * 10;
     }
 
-    // debug per far capire al giocatore i requisiti
     public void mostraDettagli() {
         System.out.println("Piatto: " + nomePiatto + " | Difficolta': " + difficoltaStelle + " stelle (Richiede " + getMaestriaRichiesta() + " maestria)");
     }

@@ -6,17 +6,16 @@ import java.util.List;
 
 public class Comanda {
     private final int numeroTavolo;
-    // la lista della spesa che contiene tutti i piatti di questo tavolo
     private final List<Piatto> piattiOrdinati;
 
     public Comanda(int numeroTavolo) {
         Validazione.verificaAlmeno(numeroTavolo, 1, "Il numero del tavolo");
         this.numeroTavolo = numeroTavolo;
-        this.piattiOrdinati = new ArrayList<>(); // preparo la scatola vuota
+        this.piattiOrdinati = new ArrayList<>();
     }
 
-    // metodo semplice per aggiungere un piatto alla lista
     public void aggiungiPiatto(Piatto p) {
+        Validazione.verificaNonNullo(p, "Il piatto da aggiungere alla comanda");
         this.piattiOrdinati.add(p);
     }
 
@@ -30,7 +29,6 @@ public class Comanda {
 
     public void stampaScontrino() {
         System.out.println("\n=== ORDINE TAVOLO " + this.numeroTavolo + " ===");
-        // ciclo for scolastico per stampare tutto quello che c'è nella lista
         for (int i = 0; i < this.piattiOrdinati.size(); i++) {
             Piatto piattoCorrente = this.piattiOrdinati.get(i);
             piattoCorrente.mostraDettagli();

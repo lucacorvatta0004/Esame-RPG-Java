@@ -5,7 +5,6 @@ public class Equipaggiamento {
     private final int bonusVelocita;
     private final int bonusMaestria;
 
-    // Costruttore
     public Equipaggiamento(String nomeOggetto, int bonusVelocita, int bonusMaestria) {
         Validazione.verificaTestoNonVuoto(nomeOggetto, "Il nome dell'equipaggiamento");
         Validazione.verificaAlmeno(bonusVelocita, 0, "Il bonus velocità");

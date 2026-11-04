@@ -14,19 +14,15 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("=== BATTLE OF THE BRIGATA ===\n");
 
-        // Preparo gli strumenti per leggere la tastiera e per il salvataggio
         Scanner tastiera = new Scanner(System.in);
         GestoreSalvataggio gestore = new GestoreSalvataggio();
         Chef giocatore = null;
 
-        // Menu iniziale grezzo
         System.out.println("Vuoi caricare l'ultimo salvataggio? (scrivi 'si' o 'no')");
         String risposta = tastiera.nextLine();
 
         if (risposta.equals("si")) {
             giocatore = gestore.caricaPartita();
-
-            // check di sicurezza: se il file txt non esiste, il metodo restituisce null
             if (giocatore == null) {
                 System.out.println("Creo un nuovo Chef di default...");
                 giocatore = new Chef("Luca", "Capo Partita");
@@ -36,7 +32,6 @@ public class Main {
             giocatore = new Chef("Luca", "Capo Partita");
         }
 
-        // Da qui in poi il gioco procede normalmente!
         Equipaggiamento coltelloChef = new Equipaggiamento("Coltello in Ceramica", 10, 15);
         giocatore.equipaggia(coltelloChef);
 
@@ -64,7 +59,6 @@ public class Main {
             gestore.salvaPartita(giocatore);
         }
 
-        // chiudo sempre lo scanner alla fine, ai prof piace molto vederlo
         tastiera.close();
     }
 

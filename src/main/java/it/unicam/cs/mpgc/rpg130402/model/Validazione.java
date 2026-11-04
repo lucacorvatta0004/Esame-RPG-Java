@@ -1,9 +1,15 @@
 package it.unicam.cs.mpgc.rpg130402.model;
 
-// controlli comuni usati dai costruttori del model, scritti una volta sola
+// controlli comuni sui parametri del model, scritti in un solo punto
 final class Validazione {
 
     private Validazione() {
+    }
+
+    static void verificaNonNullo(Object oggetto, String descrizione) {
+        if (oggetto == null) {
+            throw new IllegalArgumentException(descrizione + " non può essere null");
+        }
     }
 
     static void verificaTestoNonVuoto(String testo, String descrizione) {
