@@ -5,18 +5,18 @@ import java.util.List;
 
 public class Chef {
     private final String nome;
-    private final String ruolo;
+    private final Grado grado;
     private int livello;
     private int velocita;
     private int maestria;
     private int reputazione;
     private Equipaggiamento strumentoEquipaggiato;
 
-    public Chef(String nome, String ruolo) {
+    /** Crea un nuovo chef: la carriera parte sempre dal grado di Commis. */
+    public Chef(String nome) {
         Validazione.verificaTestoNonVuoto(nome, "Il nome dello chef");
-        Validazione.verificaTestoNonVuoto(ruolo, "Il ruolo dello chef");
         this.nome = nome;
-        this.ruolo = ruolo;
+        this.grado = Grado.COMMIS;
         this.livello = 1;
         this.velocita = 10;
         this.maestria = 10;
@@ -37,10 +37,23 @@ public class Chef {
         }
     }
 
+    public int getVelocitaTotale() {
+        if (this.strumentoEquipaggiato != null) {
+            return this.velocita + this.strumentoEquipaggiato.getBonusVelocita();
+        } else {
+            return this.velocita;
+        }
+    }
+
+    /** Le statistiche con cui lo chef cucina adesso: quelle base più i bonus dell'attrezzo. */
+    public Statistiche getStatisticheEffettive() {
+        return new Statistiche(getMaestriaTotale(), getVelocitaTotale());
+    }
+
     public void mostraStatistiche() {
         System.out.println("---------------------------------");
         System.out.println("NOME: " + this.nome);
-        System.out.println("RUOLO: " + this.ruolo);
+        System.out.println("GRADO: " + this.grado.getNome());
         System.out.println("LIVELLO: " + this.livello);
         System.out.println("VELOCITA': " + this.velocita);
         System.out.println("MAESTRIA: " + getMaestriaTotale());
@@ -49,7 +62,7 @@ public class Chef {
     }
 
     public String getNome() { return this.nome; }
-    public String getRuolo() { return this.ruolo; }
+    public Grado getGrado() { return this.grado; }
     public int getLivello() { return this.livello; }
     public int getVelocita() { return this.velocita; }
     public int getMaestriaBase() { return this.maestria; } // senza il bonus dell'equipaggiamento
@@ -57,12 +70,13 @@ public class Chef {
 
     /**
      * Ripristina le statistiche lette da un salvataggio.
+     * La velocità deve essere almeno 1, perché da lei dipende il tempo di preparazione.
      * La reputazione deve essere almeno 1: con 0 lo chef è licenziato (game over)
      * e una partita finita non si può caricare.
      */
     public void setStatisticheSalvate(int livello, int velocita, int maestria, int reputazione) {
         Validazione.verificaAlmeno(livello, 1, "Il livello");
-        Validazione.verificaAlmeno(velocita, 0, "La velocità");
+        Validazione.verificaAlmeno(velocita, 1, "La velocità");
         Validazione.verificaAlmeno(maestria, 0, "La maestria");
         Validazione.verificaIntervallo(reputazione, 1, 3, "La reputazione salvata");
         this.livello = livello;
@@ -72,26 +86,37 @@ public class Chef {
     }
 
     /**
-     * Prepara i piatti della comanda nell'ordine in cui sono stati ordinati.
-     * Ogni piatto bruciato toglie un punto di reputazione; se lo chef viene licenziato
-     * il servizio si interrompe e i piatti rimanenti non vengono preparati.
+     * Prepara i piatti della comanda, nell'ordine in cui sono stati ordinati, con la cottura normale.
+     * Se lo chef viene licenziato il servizio si interrompe e i piatti rimanenti non vengono preparati.
      */
     public EsitoServizio cucina(Comanda ordineTavolo) {
-        int maestriaEffettiva = getMaestriaTotale();
+        Azione cotturaNormale = new CotturaNormale();
         List<EsitoPiatto> esitiPiatti = new ArrayList<>();
 
         for (Piatto piatto : ordineTavolo.getPiattiOrdinati()) {
-            boolean riuscito = maestriaEffettiva >= piatto.getMaestriaRichiesta();
-            if (!riuscito) {
-                this.reputazione--;
-            }
-            esitiPiatti.add(new EsitoPiatto(piatto, riuscito, this.reputazione));
+            esitiPiatti.add(cucina(piatto, cotturaNormale));
             if (isLicenziato()) {
                 break;
             }
         }
 
         return new EsitoServizio(esitiPiatti, isLicenziato());
+    }
+
+    /**
+     * Prepara un piatto con l'azione scelta. Se il piatto brucia toglie un punto di reputazione.
+     * Il tempo di preparazione si calcola dalla velocità usata dall'azione.
+     */
+    public EsitoPiatto cucina(Piatto piatto, Azione azione) {
+        Validazione.verificaNonNullo(piatto, "Il piatto da cucinare");
+        Validazione.verificaNonNullo(azione, "L'azione con cui cucinare");
+
+        Preparazione preparazione = azione.esegui(piatto, getStatisticheEffettive());
+        if (!preparazione.riuscito()) {
+            this.reputazione--;
+        }
+        int minutiPreparazione = piatto.minutiDiPreparazione(preparazione.statisticheUsate().velocita());
+        return new EsitoPiatto(piatto, preparazione.riuscito(), minutiPreparazione, this.reputazione);
     }
 
     public boolean isLicenziato() {

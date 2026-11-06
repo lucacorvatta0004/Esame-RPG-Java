@@ -25,11 +25,11 @@ public class Main {
             giocatore = gestore.caricaPartita();
             if (giocatore == null) {
                 System.out.println("Creo un nuovo Chef di default...");
-                giocatore = new Chef("Luca", "Capo Partita");
+                giocatore = new Chef("Luca");
             }
         } else {
             System.out.println("Inizio una nuova carriera...");
-            giocatore = new Chef("Luca", "Capo Partita");
+            giocatore = new Chef("Luca");
         }
 
         Equipaggiamento coltelloChef = new Equipaggiamento("Coltello in Ceramica", 10, 15);
@@ -71,6 +71,7 @@ public class Main {
     private static void mostraEsitoPiatto(EsitoPiatto esitoPiatto, int maestriaEffettiva) {
         Piatto piatto = esitoPiatto.piatto();
         System.out.println("\n-> Preparo: " + piatto.getNomePiatto());
+        System.out.println("Tempo di preparazione: " + esitoPiatto.minutiPreparazione() + " minuti");
 
         if (esitoPiatto.riuscito()) {
             System.out.println("SUCCESSO! Piatto riuscito.");

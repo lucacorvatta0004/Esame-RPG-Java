@@ -15,7 +15,7 @@ public class GestoreSalvataggio {
 
     public void salvaPartita(Chef giocatore) {
         String datiDaSalvare = giocatore.getNome() + "," +
-                giocatore.getRuolo() + "," +
+                giocatore.getGrado().getNome() + "," +
                 giocatore.getLivello() + "," +
                 giocatore.getVelocita() + "," +
                 giocatore.getMaestriaBase() + "," +
@@ -42,13 +42,13 @@ public class GestoreSalvataggio {
             }
 
             String nomeSalvato = pezzi[0];
-            String ruoloSalvato = pezzi[1];
+            // pezzi[1] è il grado: per ora non viene ripristinato e lo chef riparte da Commis
             int livelloSalvato = Integer.parseInt(pezzi[2]);
             int velocitaSalvata = Integer.parseInt(pezzi[3]);
             int maestriaSalvata = Integer.parseInt(pezzi[4]);
             int reputazioneSalvata = Integer.parseInt(pezzi[5]);
 
-            Chef chefRecuperato = new Chef(nomeSalvato, ruoloSalvato);
+            Chef chefRecuperato = new Chef(nomeSalvato);
             chefRecuperato.setStatisticheSalvate(livelloSalvato, velocitaSalvata, maestriaSalvata, reputazioneSalvata);
 
             System.out.println("Salvataggio trovato! Bentornato, " + nomeSalvato + ".");
