@@ -14,6 +14,11 @@ public class PiattoFirma extends AzioneSpeciale {
     }
 
     @Override
+    public String getDescrizione() {
+        return "il piatto riesce sempre";
+    }
+
+    @Override
     protected Preparazione prepara(Piatto piatto, Statistiche statistiche) {
         return new Preparazione(true, statistiche);
     }

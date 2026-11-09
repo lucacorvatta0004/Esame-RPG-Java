@@ -7,6 +7,8 @@ import it.unicam.cs.mpgc.rpg130402.model.EsitoPiatto;
 import it.unicam.cs.mpgc.rpg130402.model.EsitoServizio;
 import it.unicam.cs.mpgc.rpg130402.model.Menu;
 import it.unicam.cs.mpgc.rpg130402.model.Piatto;
+import it.unicam.cs.mpgc.rpg130402.model.Servizio;
+import it.unicam.cs.mpgc.rpg130402.ui.SceltaAzioneDaConsole;
 
 import java.util.Scanner;
 
@@ -24,12 +26,12 @@ public class Main {
         if (risposta.equals("si")) {
             giocatore = gestore.caricaPartita();
             if (giocatore == null) {
-                System.out.println("Creo un nuovo Chef di default...");
-                giocatore = new Chef("Luca");
+                System.out.println("Creo un nuovo Chef...");
+                giocatore = creaNuovoChef(tastiera);
             }
         } else {
             System.out.println("Inizio una nuova carriera...");
-            giocatore = new Chef("Luca");
+            giocatore = creaNuovoChef(tastiera);
         }
 
         Equipaggiamento coltelloChef = new Equipaggiamento("Coltello in Ceramica", 10, 15);
@@ -38,6 +40,7 @@ public class Main {
         giocatore.mostraStatistiche();
 
         Menu menuDelGiorno = new Menu();
+        Servizio servizio = new Servizio(giocatore, new SceltaAzioneDaConsole(tastiera));
 
         System.out.println("\n--- INIZIO SERVIZIO TAVOLI ---");
 
@@ -45,8 +48,7 @@ public class Main {
         tavolo1.stampaScontrino();
 
         System.out.println("\n" + giocatore.getNome() + " inizia a preparare il Tavolo " + tavolo1.getNumeroTavolo() + "...");
-        EsitoServizio esito = giocatore.cucina(tavolo1);
-        mostraEsitiPiatti(esito, giocatore.getMaestriaTotale());
+        EsitoServizio esito = servizio.serviTavolo(tavolo1, Main::mostraEsitoPiatto);
 
         if (esito.chefLicenziato()) {
             System.out.println("\nGAME OVER! Hai bruciato troppi piatti, sei stato licenziato.");
@@ -62,21 +64,26 @@ public class Main {
         tastiera.close();
     }
 
-    private static void mostraEsitiPiatti(EsitoServizio esito, int maestriaEffettiva) {
-        for (EsitoPiatto esitoPiatto : esito.esitiPiatti()) {
-            mostraEsitoPiatto(esitoPiatto, maestriaEffettiva);
+    /** Chiede il nome finché il model non lo accetta: la regola sul nome resta nel costruttore di Chef. */
+    private static Chef creaNuovoChef(Scanner tastiera) {
+        while (true) {
+            System.out.println("Come si chiama il tuo chef?");
+            try {
+                return new Chef(tastiera.nextLine().strip());
+            } catch (IllegalArgumentException e) {
+                System.out.println("Nome non valido: " + e.getMessage() + ".");
+            }
         }
     }
 
-    private static void mostraEsitoPiatto(EsitoPiatto esitoPiatto, int maestriaEffettiva) {
+    private static void mostraEsitoPiatto(EsitoPiatto esitoPiatto) {
         Piatto piatto = esitoPiatto.piatto();
-        System.out.println("\n-> Preparo: " + piatto.getNomePiatto());
         System.out.println("Tempo di preparazione: " + esitoPiatto.minutiPreparazione() + " minuti");
 
         if (esitoPiatto.riuscito()) {
             System.out.println("SUCCESSO! Piatto riuscito.");
         } else {
-            System.out.println("DISASTRO! Piatto bruciato. (Serve " + piatto.getMaestriaRichiesta() + " maestria, hai " + maestriaEffettiva + ")");
+            System.out.println("DISASTRO! Piatto bruciato. (Serve " + piatto.getMaestriaRichiesta() + " maestria, hai " + esitoPiatto.maestriaUsata() + ")");
             System.out.println("Attenzione! Reputazione scesa a: " + esitoPiatto.reputazioneDopo());
         }
     }

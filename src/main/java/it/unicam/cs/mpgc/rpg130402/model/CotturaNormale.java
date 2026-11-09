@@ -9,6 +9,11 @@ public class CotturaNormale implements Azione {
     }
 
     @Override
+    public String getDescrizione() {
+        return "riesce se la tua maestria arriva a quella richiesta dal piatto";
+    }
+
+    @Override
     public Preparazione esegui(Piatto piatto, Statistiche statistiche) {
         return Preparazione.secondoMaestria(piatto, statistiche);
     }

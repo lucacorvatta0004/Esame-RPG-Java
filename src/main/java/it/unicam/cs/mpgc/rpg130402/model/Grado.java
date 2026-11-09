@@ -1,25 +1,37 @@
 package it.unicam.cs.mpgc.rpg130402.model;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Supplier;
 
 /**
  * I gradi della carriera dello chef, dal più basso al più alto.
- * Ogni grado sblocca le sue azioni e tiene quelle dei gradi precedenti.
+ * Ogni grado si raggiunge a un livello minimo, sblocca le sue azioni e tiene quelle dei gradi precedenti.
  */
 public enum Grado {
-    COMMIS("Commis", List.of(CotturaNormale::new, Improvvisazione::new)),
-    CAPO_PARTITA("Capo Partita", List.of(FuocoAlto::new)),
-    SOUS_CHEF("Sous-Chef", List.of(RicettaCollaudata::new)),
-    CHEF("Chef", List.of(PiattoFirma::new));
+    COMMIS("Commis", 1, List.of(CotturaNormale::new, Improvvisazione::new)),
+    CAPO_PARTITA("Capo Partita", 3, List.of(FuocoAlto::new)),
+    SOUS_CHEF("Sous-Chef", 5, List.of(RicettaCollaudata::new)),
+    CHEF("Chef", 7, List.of(PiattoFirma::new));
 
     private final String nome;
+    private final int livelloMinimo;
     private final List<Supplier<Azione>> azioniSbloccate;
 
-    Grado(String nome, List<Supplier<Azione>> azioniSbloccate) {
+    Grado(String nome, int livelloMinimo, List<Supplier<Azione>> azioniSbloccate) {
         this.nome = nome;
+        this.livelloMinimo = livelloMinimo;
         this.azioniSbloccate = azioniSbloccate;
+    }
+
+    /** Il grado più alto raggiunto al livello dato (almeno 1): così il grado non può contraddire il livello. */
+    public static Grado perLivello(int livello) {
+        Validazione.verificaAlmeno(livello, 1, "Il livello");
+        return Arrays.stream(values())
+                .filter(grado -> grado.livelloMinimo <= livello)
+                .max(Comparator.naturalOrder())
+                .orElseThrow();
     }
 
     public String getNome() {

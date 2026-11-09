@@ -15,6 +15,11 @@ public class RicettaCollaudata extends AzioneSpeciale {
     }
 
     @Override
+    public String getDescrizione() {
+        return "+" + BONUS_MAESTRIA + " maestria su questo piatto";
+    }
+
+    @Override
     protected Preparazione prepara(Piatto piatto, Statistiche statistiche) {
         Statistiche conRicetta = statistiche.conBonus(BONUS_MAESTRIA, 0);
         return Preparazione.secondoMaestria(piatto, conRicetta);

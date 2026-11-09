@@ -22,6 +22,11 @@ public class Improvvisazione implements Azione {
     }
 
     @Override
+    public String getDescrizione() {
+        return "riesce una volta su due, la maestria non conta";
+    }
+
+    @Override
     public Preparazione esegui(Piatto piatto, Statistiche statistiche) {
         return new Preparazione(generatore.nextBoolean(), statistiche);
     }

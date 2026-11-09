@@ -16,6 +16,11 @@ public class FuocoAlto extends AzioneSpeciale {
     }
 
     @Override
+    public String getDescrizione() {
+        return "-" + PERDITA_MAESTRIA + " maestria e +" + GUADAGNO_VELOCITA + " velocità: più veloce, ma brucia più facilmente";
+    }
+
+    @Override
     protected Preparazione prepara(Piatto piatto, Statistiche statistiche) {
         Statistiche aFuocoAlto = statistiche.conBonus(-PERDITA_MAESTRIA, GUADAGNO_VELOCITA);
         return Preparazione.secondoMaestria(piatto, aFuocoAlto);

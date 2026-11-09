@@ -42,7 +42,7 @@ public class GestoreSalvataggio {
             }
 
             String nomeSalvato = pezzi[0];
-            // pezzi[1] è il grado: per ora non viene ripristinato e lo chef riparte da Commis
+            // pezzi[1] è il grado, scritto solo come informazione: non si legge perché si ricava dal livello
             int livelloSalvato = Integer.parseInt(pezzi[2]);
             int velocitaSalvata = Integer.parseInt(pezzi[3]);
             int maestriaSalvata = Integer.parseInt(pezzi[4]);

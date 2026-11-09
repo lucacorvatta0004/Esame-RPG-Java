@@ -1,22 +1,17 @@
 package it.unicam.cs.mpgc.rpg130402.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Chef {
     private final String nome;
-    private final Grado grado;
     private int livello;
     private int velocita;
     private int maestria;
     private int reputazione;
     private Equipaggiamento strumentoEquipaggiato;
 
-    /** Crea un nuovo chef: la carriera parte sempre dal grado di Commis. */
+    /** Crea un nuovo chef: la carriera parte dal livello 1, quindi dal grado di Commis. */
     public Chef(String nome) {
         Validazione.verificaTestoNonVuoto(nome, "Il nome dello chef");
         this.nome = nome;
-        this.grado = Grado.COMMIS;
         this.livello = 1;
         this.velocita = 10;
         this.maestria = 10;
@@ -53,16 +48,16 @@ public class Chef {
     public void mostraStatistiche() {
         System.out.println("---------------------------------");
         System.out.println("NOME: " + this.nome);
-        System.out.println("GRADO: " + this.grado.getNome());
+        System.out.println("GRADO: " + getGrado().getNome());
         System.out.println("LIVELLO: " + this.livello);
-        System.out.println("VELOCITA': " + this.velocita);
+        System.out.println("VELOCITA': " + getVelocitaTotale());
         System.out.println("MAESTRIA: " + getMaestriaTotale());
         System.out.println("REPUTAZIONE: " + this.reputazione + " vite");
         System.out.println("---------------------------------");
     }
 
     public String getNome() { return this.nome; }
-    public Grado getGrado() { return this.grado; }
+    public Grado getGrado() { return Grado.perLivello(this.livello); }
     public int getLivello() { return this.livello; }
     public int getVelocita() { return this.velocita; }
     public int getMaestriaBase() { return this.maestria; } // senza il bonus dell'equipaggiamento
@@ -86,28 +81,12 @@ public class Chef {
     }
 
     /**
-     * Prepara i piatti della comanda, nell'ordine in cui sono stati ordinati, con la cottura normale.
-     * Se lo chef viene licenziato il servizio si interrompe e i piatti rimanenti non vengono preparati.
-     */
-    public EsitoServizio cucina(Comanda ordineTavolo) {
-        Azione cotturaNormale = new CotturaNormale();
-        List<EsitoPiatto> esitiPiatti = new ArrayList<>();
-
-        for (Piatto piatto : ordineTavolo.getPiattiOrdinati()) {
-            esitiPiatti.add(cucina(piatto, cotturaNormale));
-            if (isLicenziato()) {
-                break;
-            }
-        }
-
-        return new EsitoServizio(esitiPiatti, isLicenziato());
-    }
-
-    /**
      * Prepara un piatto con l'azione scelta. Se il piatto brucia toglie un punto di reputazione.
      * Il tempo di preparazione si calcola dalla velocità usata dall'azione.
+     * Visibile solo nel model: da fuori si cucina con un {@link Servizio}, che accetta
+     * solo le azioni sbloccate dal grado e ancora disponibili.
      */
-    public EsitoPiatto cucina(Piatto piatto, Azione azione) {
+    EsitoPiatto cucina(Piatto piatto, Azione azione) {
         Validazione.verificaNonNullo(piatto, "Il piatto da cucinare");
         Validazione.verificaNonNullo(azione, "L'azione con cui cucinare");
 
@@ -116,7 +95,7 @@ public class Chef {
             this.reputazione--;
         }
         int minutiPreparazione = piatto.minutiDiPreparazione(preparazione.statisticheUsate().velocita());
-        return new EsitoPiatto(piatto, preparazione.riuscito(), minutiPreparazione, this.reputazione);
+        return new EsitoPiatto(piatto, preparazione, minutiPreparazione, this.reputazione);
     }
 
     public boolean isLicenziato() {

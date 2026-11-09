@@ -1,5 +1,7 @@
 package it.unicam.cs.mpgc.rpg130402.model;
 
+import java.util.OptionalInt;
+
 /**
  * Una mossa sbloccata dal grado, con un numero limitato di usi per servizio.
  * Gli usi non si ricaricano: per un nuovo servizio si crea una nuova istanza
@@ -13,8 +15,9 @@ public abstract class AzioneSpeciale implements Azione {
         this.usiRimasti = usiPerServizio;
     }
 
-    public int getUsiRimasti() {
-        return usiRimasti;
+    @Override
+    public final OptionalInt getUsiRimasti() {
+        return OptionalInt.of(usiRimasti);
     }
 
     @Override
