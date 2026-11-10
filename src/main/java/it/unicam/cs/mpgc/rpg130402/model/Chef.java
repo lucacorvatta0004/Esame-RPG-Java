@@ -50,9 +50,9 @@ public class Chef {
         System.out.println("NOME: " + this.nome);
         System.out.println("GRADO: " + getGrado().getNome());
         System.out.println("LIVELLO: " + this.livello);
-        System.out.println("VELOCITA': " + getVelocitaTotale());
+        System.out.println("VELOCITÀ: " + getVelocitaTotale());
         System.out.println("MAESTRIA: " + getMaestriaTotale());
-        System.out.println("REPUTAZIONE: " + this.reputazione + " vite");
+        System.out.println("REPUTAZIONE: " + Testo.conNumero(this.reputazione, "vita", "vite"));
         System.out.println("---------------------------------");
     }
 

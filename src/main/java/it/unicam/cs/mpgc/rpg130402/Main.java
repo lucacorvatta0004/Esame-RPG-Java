@@ -8,6 +8,7 @@ import it.unicam.cs.mpgc.rpg130402.model.EsitoServizio;
 import it.unicam.cs.mpgc.rpg130402.model.Menu;
 import it.unicam.cs.mpgc.rpg130402.model.Piatto;
 import it.unicam.cs.mpgc.rpg130402.model.Servizio;
+import it.unicam.cs.mpgc.rpg130402.model.Testo;
 import it.unicam.cs.mpgc.rpg130402.ui.SceltaAzioneDaConsole;
 
 import java.util.Scanner;
@@ -44,7 +45,7 @@ public class Main {
 
         System.out.println("\n--- INIZIO SERVIZIO TAVOLI ---");
 
-        Comanda tavolo1 = menuDelGiorno.generaComandaCasuale(1, 3);
+        Comanda tavolo1 = menuDelGiorno.generaComandaCasuale(1, 3, giocatore.getGrado().getStelleMassime());
         tavolo1.stampaScontrino();
 
         System.out.println("\n" + giocatore.getNome() + " inizia a preparare il Tavolo " + tavolo1.getNumeroTavolo() + "...");
@@ -78,7 +79,7 @@ public class Main {
 
     private static void mostraEsitoPiatto(EsitoPiatto esitoPiatto) {
         Piatto piatto = esitoPiatto.piatto();
-        System.out.println("Tempo di preparazione: " + esitoPiatto.minutiPreparazione() + " minuti");
+        System.out.println("Tempo di preparazione: " + Testo.conNumero(esitoPiatto.minutiPreparazione(), "minuto", "minuti"));
 
         if (esitoPiatto.riuscito()) {
             System.out.println("SUCCESSO! Piatto riuscito.");
@@ -94,7 +95,7 @@ public class Main {
         if (esito.piattiBruciati() == 0) {
             System.out.println("I clienti sono entusiasti! Hanno ricevuto tutti i piatti in modo perfetto.");
         } else {
-            System.out.println("I clienti sono FURIOSI! Hanno ricevuto solo " + esito.piattiRiusciti() + " piatti su " + esito.esitiPiatti().size() + " e lasciano una recensione pessima!");
+            System.out.println("I clienti sono FURIOSI! Hanno ricevuto solo " + Testo.conNumero(esito.piattiRiusciti(), "piatto", "piatti") + " su " + esito.esitiPiatti().size() + " e lasciano una recensione pessima!");
         }
     }
 }

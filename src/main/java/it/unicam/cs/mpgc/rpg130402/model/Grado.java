@@ -8,20 +8,24 @@ import java.util.function.Supplier;
 /**
  * I gradi della carriera dello chef, dal più basso al più alto.
  * Ogni grado si raggiunge a un livello minimo, sblocca le sue azioni e tiene quelle dei gradi precedenti.
+ * Ogni grado ha anche un massimo di stelle per i piatti che riceve: al Commis arrivano solo piatti
+ * che si riescono con la Cottura normale (2 stelle = 20 maestria, un Commis col coltello ne ha 25).
  */
 public enum Grado {
-    COMMIS("Commis", 1, List.of(CotturaNormale::new, Improvvisazione::new)),
-    CAPO_PARTITA("Capo Partita", 3, List.of(FuocoAlto::new)),
-    SOUS_CHEF("Sous-Chef", 5, List.of(RicettaCollaudata::new)),
-    CHEF("Chef", 7, List.of(PiattoFirma::new));
+    COMMIS("Commis", 1, 2, List.of(CotturaNormale::new, Improvvisazione::new)),
+    CAPO_PARTITA("Capo Partita", 3, 3, List.of(FuocoAlto::new)),
+    SOUS_CHEF("Sous-Chef", 5, 4, List.of(RicettaCollaudata::new)),
+    CHEF("Chef", 7, 5, List.of(PiattoFirma::new));
 
     private final String nome;
     private final int livelloMinimo;
+    private final int stelleMassime;
     private final List<Supplier<Azione>> azioniSbloccate;
 
-    Grado(String nome, int livelloMinimo, List<Supplier<Azione>> azioniSbloccate) {
+    Grado(String nome, int livelloMinimo, int stelleMassime, List<Supplier<Azione>> azioniSbloccate) {
         this.nome = nome;
         this.livelloMinimo = livelloMinimo;
+        this.stelleMassime = stelleMassime;
         this.azioniSbloccate = azioniSbloccate;
     }
 
@@ -36,6 +40,11 @@ public enum Grado {
 
     public String getNome() {
         return nome;
+    }
+
+    /** Le stelle massime dei piatti che lo chef può ricevere a questo grado. */
+    public int getStelleMassime() {
+        return stelleMassime;
     }
 
     /**

@@ -3,6 +3,7 @@ package it.unicam.cs.mpgc.rpg130402.ui;
 import it.unicam.cs.mpgc.rpg130402.model.Azione;
 import it.unicam.cs.mpgc.rpg130402.model.Piatto;
 import it.unicam.cs.mpgc.rpg130402.model.SceltaAzione;
+import it.unicam.cs.mpgc.rpg130402.model.Testo;
 
 import java.util.List;
 import java.util.OptionalInt;
@@ -19,8 +20,9 @@ public class SceltaAzioneDaConsole implements SceltaAzione {
 
     @Override
     public Azione scegli(Piatto piatto, List<Azione> azioniDisponibili) {
-        System.out.println("\n-> Prossimo piatto: " + piatto.getNomePiatto() + " (" + piatto.getDifficoltaStelle()
-                + " stelle, richiede " + piatto.getMaestriaRichiesta() + " maestria)");
+        System.out.println("\n-> Prossimo piatto: " + piatto.getNomePiatto() + " ("
+                + Testo.conNumero(piatto.getDifficoltaStelle(), "stella", "stelle")
+                + ", richiede " + piatto.getMaestriaRichiesta() + " maestria)");
         mostraMenu(azioniDisponibili);
         int numeroScelto = leggiNumeroDa1A(azioniDisponibili.size());
         return azioniDisponibili.get(numeroScelto - 1);
@@ -34,7 +36,7 @@ public class SceltaAzioneDaConsole implements SceltaAzione {
     }
 
     private String descrivi(Azione azione) {
-        String descrizione = azione.getNome() + " - " + azione.getDescrizione();
+        String descrizione = azione.getNome() + ": " + azione.getDescrizione();
         OptionalInt usiRimasti = azione.getUsiRimasti();
         if (usiRimasti.isPresent()) {
             descrizione += " (usi rimasti: " + usiRimasti.getAsInt() + ")";

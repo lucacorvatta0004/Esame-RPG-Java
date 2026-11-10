@@ -21,6 +21,11 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter'
 }
 
+// i sorgenti sono in UTF-8: lo diciamo al compilatore, così non dipende dal computer
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
 test {
     useJUnitPlatform()
 }
@@ -29,6 +34,9 @@ application {
     mainClass = 'it.unicam.cs.mpgc.rpg130402.Main'
 }
 
-run {
+// vale per ogni avvio del gioco: ./gradlew run e anche il task che IntelliJ crea col triangolo verde.
+// L'output passa da Gradle, che lo legge in UTF-8: il programma deve scriverlo in UTF-8
+tasks.withType(JavaExec).configureEach {
     standardInput = System.in
+    jvmArgs '-Dstdout.encoding=UTF-8', '-Dstderr.encoding=UTF-8'
 }

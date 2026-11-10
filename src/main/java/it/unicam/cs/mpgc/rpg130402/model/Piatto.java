@@ -31,6 +31,6 @@ public class Piatto {
     }
 
     public void mostraDettagli() {
-        System.out.println("Piatto: " + nomePiatto + " | Difficolta': " + difficoltaStelle + " stelle (Richiede " + getMaestriaRichiesta() + " maestria)");
+        System.out.println("Piatto: " + nomePiatto + " | Difficoltà: " + Testo.conNumero(difficoltaStelle, "stella", "stelle") + " (Richiede " + getMaestriaRichiesta() + " maestria)");
     }
 }
