@@ -9,8 +9,13 @@ import it.unicam.cs.mpgc.rpg130402.model.Menu;
 import it.unicam.cs.mpgc.rpg130402.model.Piatto;
 import it.unicam.cs.mpgc.rpg130402.model.Servizio;
 import it.unicam.cs.mpgc.rpg130402.model.Testo;
+import it.unicam.cs.mpgc.rpg130402.persistence.RepositoryPartita;
+import it.unicam.cs.mpgc.rpg130402.persistence.RepositoryPartitaJson;
+import it.unicam.cs.mpgc.rpg130402.persistence.SalvataggioException;
 import it.unicam.cs.mpgc.rpg130402.ui.SceltaAzioneDaConsole;
 
+import java.nio.file.Path;
+import java.util.Optional;
 import java.util.Scanner;
 
 public class Main {
@@ -18,22 +23,9 @@ public class Main {
         System.out.println("=== BATTLE OF THE BRIGATA ===\n");
 
         Scanner tastiera = new Scanner(System.in);
-        GestoreSalvataggio gestore = new GestoreSalvataggio();
-        Chef giocatore = null;
-
-        System.out.println("Vuoi caricare l'ultimo salvataggio? (scrivi 'si' o 'no')");
-        String risposta = tastiera.nextLine();
-
-        if (risposta.equals("si")) {
-            giocatore = gestore.caricaPartita();
-            if (giocatore == null) {
-                System.out.println("Creo un nuovo Chef...");
-                giocatore = creaNuovoChef(tastiera);
-            }
-        } else {
-            System.out.println("Inizio una nuova carriera...");
-            giocatore = creaNuovoChef(tastiera);
-        }
+        // l'unico punto che sceglie il salvataggio in JSON: il file sta nella cartella da cui si avvia il gioco
+        RepositoryPartita repository = new RepositoryPartitaJson(Path.of("salvataggio.json"));
+        Chef giocatore = preparaChef(tastiera, repository);
 
         Equipaggiamento coltelloChef = new Equipaggiamento("Coltello in Ceramica", 10, 15);
         giocatore.equipaggia(coltelloChef);
@@ -53,16 +45,56 @@ public class Main {
 
         if (esito.chefLicenziato()) {
             System.out.println("\nGAME OVER! Hai bruciato troppi piatti, sei stato licenziato.");
+            chiudiCarriera(repository);
         } else {
             mostraServizioCompletato(tavolo1, esito);
 
             System.out.println("\n--- FINE TURNO ---");
             System.out.println("Salvataggio progressi in corso...");
-
-            gestore.salvaPartita(giocatore);
+            salvaChef(repository, giocatore);
         }
 
         tastiera.close();
+    }
+
+    /** Carica lo chef salvato oppure ne crea uno nuovo: restituisce sempre uno chef. */
+    private static Chef preparaChef(Scanner tastiera, RepositoryPartita repository) {
+        System.out.println("Vuoi caricare l'ultimo salvataggio? (scrivi 'si' o 'no')");
+
+        if (tastiera.nextLine().equals("si")) {
+            Optional<Chef> chefSalvato = caricaChef(repository);
+            if (chefSalvato.isPresent()) {
+                return chefSalvato.get();
+            }
+            System.out.println("Creo un nuovo Chef...");
+        } else {
+            avvisaSeSostituisciCarriera(repository);
+            System.out.println("Inizio una nuova carriera...");
+        }
+        return creaNuovoChef(tastiera);
+    }
+
+    private static Optional<Chef> caricaChef(RepositoryPartita repository) {
+        try {
+            Optional<Chef> chefSalvato = repository.carica();
+            chefSalvato.ifPresentOrElse(
+                    chef -> System.out.println("Salvataggio trovato! Bentornato, " + chef.getNome() + "."),
+                    () -> System.out.println("Nessun salvataggio trovato."));
+            return chefSalvato;
+        } catch (SalvataggioException e) {
+            System.out.println("Salvataggio non valido (" + e.getMessage() + ").");
+            return Optional.empty();
+        }
+    }
+
+    /** C'è un solo salvataggio: una nuova carriera prende il posto di quella salvata. */
+    private static void avvisaSeSostituisciCarriera(RepositoryPartita repository) {
+        try {
+            repository.carica().ifPresent(chefSalvato -> System.out.println("Attenzione: la carriera salvata di "
+                    + chefSalvato.getNome() + " verrà sostituita da quella nuova."));
+        } catch (SalvataggioException _) {
+            // un salvataggio rovinato non è una carriera da perdere: non c'è niente da avvisare
+        }
     }
 
     /** Chiede il nome finché il model non lo accetta: la regola sul nome resta nel costruttore di Chef. */
@@ -96,6 +128,25 @@ public class Main {
             System.out.println("I clienti sono entusiasti! Hanno ricevuto tutti i piatti in modo perfetto.");
         } else {
             System.out.println("I clienti sono FURIOSI! Hanno ricevuto solo " + Testo.conNumero(esito.piattiRiusciti(), "piatto", "piatti") + " su " + esito.esitiPiatti().size() + " e lasciano una recensione pessima!");
+        }
+    }
+
+    /** Reputazione 0 = carriera finita: il salvataggio si cancella e la prossima partita riparte da capo. */
+    private static void chiudiCarriera(RepositoryPartita repository) {
+        try {
+            repository.elimina();
+            System.out.println("Carriera finita: il salvataggio non c'è più, la prossima volta si ricomincia da capo.");
+        } catch (SalvataggioException e) {
+            System.out.println("ERRORE: impossibile cancellare il salvataggio (" + e.getMessage() + ").");
+        }
+    }
+
+    private static void salvaChef(RepositoryPartita repository, Chef giocatore) {
+        try {
+            repository.salva(giocatore);
+            System.out.println("Salvataggio completato con successo!");
+        } catch (SalvataggioException e) {
+            System.out.println("ERRORE: impossibile salvare la partita (" + e.getMessage() + ").");
         }
     }
 }

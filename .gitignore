@@ -11,7 +11,7 @@ out/
 .idea/tasks.xml
 
 # Salvataggi del giocatore (dati dinamici, non sorgenti)
-salvataggio.txt
+salvataggio.json
 
 # Sistema operativo
 .DS_Store
