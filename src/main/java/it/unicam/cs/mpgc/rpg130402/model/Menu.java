@@ -1,6 +1,5 @@
 package it.unicam.cs.mpgc.rpg130402.model;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -8,15 +7,16 @@ public class Menu {
     private final List<Piatto> listaPiatti;
     private final Random generatore;
 
-    public Menu() {
-        this.listaPiatti = new ArrayList<>();
+    /**
+     * Il menu con i piatti ricevuti da fuori (per esempio quelli del catalogo): il menu non sa da dove arrivano.
+     * La lista viene copiata, quindi cambiarla dopo non cambia il menu.
+     *
+     * @throws IllegalArgumentException se la lista è null, è vuota o contiene null
+     */
+    public Menu(List<Piatto> piatti) {
+        Validazione.verificaListaNonVuota(piatti, "La lista dei piatti del menu");
+        this.listaPiatti = List.copyOf(piatti);
         this.generatore = new Random();
-
-        this.listaPiatti.add(new Piatto("Spaghetti al Pomodoro", 1));
-        this.listaPiatti.add(new Piatto("Carbonara", 2));
-        this.listaPiatti.add(new Piatto("Risotto ai Funghi", 3));
-        this.listaPiatti.add(new Piatto("Filetto alla Wellington", 4));
-        this.listaPiatti.add(new Piatto("Soufflé al Cioccolato", 5));
     }
 
     /**

@@ -1,0 +1,17 @@
+[
+  { "nome": "Spaghetti al Pomodoro", "stelle": 1 },
+  { "nome": "Bruschetta al Pomodoro", "stelle": 1 },
+  { "nome": "Insalata Caprese", "stelle": 1 },
+  { "nome": "Carbonara", "stelle": 2 },
+  { "nome": "Pasta all'Amatriciana", "stelle": 2 },
+  { "nome": "Tiramisù", "stelle": 2 },
+  { "nome": "Risotto ai Funghi", "stelle": 3 },
+  { "nome": "Lasagne alla Bolognese", "stelle": 3 },
+  { "nome": "Parmigiana di Melanzane", "stelle": 3 },
+  { "nome": "Filetto alla Wellington", "stelle": 4 },
+  { "nome": "Ossobuco alla Milanese", "stelle": 4 },
+  { "nome": "Tortellini in Brodo", "stelle": 4 },
+  { "nome": "Soufflé al Cioccolato", "stelle": 5 },
+  { "nome": "Timballo di Maccheroni", "stelle": 5 },
+  { "nome": "Cassata Siciliana", "stelle": 5 }
+]

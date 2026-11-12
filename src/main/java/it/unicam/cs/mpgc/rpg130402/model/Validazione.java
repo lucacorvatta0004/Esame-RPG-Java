@@ -1,5 +1,8 @@
 package it.unicam.cs.mpgc.rpg130402.model;
 
+import java.util.List;
+import java.util.Objects;
+
 // controlli comuni sui parametri del model, scritti in un solo punto
 final class Validazione {
 
@@ -15,6 +18,16 @@ final class Validazione {
     static void verificaTestoNonVuoto(String testo, String descrizione) {
         if (testo == null || testo.isBlank()) {
             throw new IllegalArgumentException(descrizione + " non può essere vuoto");
+        }
+    }
+
+    static void verificaListaNonVuota(List<?> lista, String descrizione) {
+        verificaNonNullo(lista, descrizione);
+        if (lista.isEmpty()) {
+            throw new IllegalArgumentException(descrizione + " non può essere vuota");
+        }
+        if (lista.stream().anyMatch(Objects::isNull)) {
+            throw new IllegalArgumentException(descrizione + " non può contenere elementi null");
         }
     }
 

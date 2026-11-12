@@ -9,6 +9,9 @@ import it.unicam.cs.mpgc.rpg130402.model.Menu;
 import it.unicam.cs.mpgc.rpg130402.model.Piatto;
 import it.unicam.cs.mpgc.rpg130402.model.Servizio;
 import it.unicam.cs.mpgc.rpg130402.model.Testo;
+import it.unicam.cs.mpgc.rpg130402.persistence.Catalogo;
+import it.unicam.cs.mpgc.rpg130402.persistence.CatalogoException;
+import it.unicam.cs.mpgc.rpg130402.persistence.CatalogoJson;
 import it.unicam.cs.mpgc.rpg130402.persistence.RepositoryPartita;
 import it.unicam.cs.mpgc.rpg130402.persistence.RepositoryPartitaJson;
 import it.unicam.cs.mpgc.rpg130402.persistence.SalvataggioException;
@@ -19,20 +22,41 @@ import java.util.Optional;
 import java.util.Scanner;
 
 public class Main {
+    // l'attrezzo con cui parte ogni chef: qui c'è solo il nome, i bonus sono nel catalogo (attrezzi.json)
+    private static final String ATTREZZO_INIZIALE = "Coltello in Ceramica";
+
+    /**
+     * Prima di tutto legge i dati fissi del gioco. Se mancano o sono rovinati è un errore di chi ha preparato
+     * il gioco, non del giocatore: si mostra il problema e si esce con codice 1, senza iniziare la partita.
+     */
     public static void main(String[] args) {
         System.out.println("=== BATTLE OF THE BRIGATA ===\n");
 
+        Catalogo catalogo;
+        Equipaggiamento attrezzoIniziale;
+        try {
+            // l'unico punto che sceglie di leggere i dati fissi dai file JSON tra le risorse
+            catalogo = new CatalogoJson();
+            attrezzoIniziale = catalogo.getAttrezzo(ATTREZZO_INIZIALE);
+        } catch (CatalogoException e) {
+            System.err.println("ERRORE: il gioco non può partire, i suoi dati sono rovinati (" + e.getMessage() + ").");
+            System.exit(1);
+            return; // il compilatore non sa che System.exit non torna: senza return, sotto, catalogo risulterebbe non assegnato
+        }
+
+        giocaPartita(new Menu(catalogo.getPiatti()), attrezzoIniziale);
+    }
+
+    private static void giocaPartita(Menu menuDelGiorno, Equipaggiamento attrezzoIniziale) {
         Scanner tastiera = new Scanner(System.in);
         // l'unico punto che sceglie il salvataggio in JSON: il file sta nella cartella da cui si avvia il gioco
         RepositoryPartita repository = new RepositoryPartitaJson(Path.of("salvataggio.json"));
         Chef giocatore = preparaChef(tastiera, repository);
 
-        Equipaggiamento coltelloChef = new Equipaggiamento("Coltello in Ceramica", 10, 15);
-        giocatore.equipaggia(coltelloChef);
+        giocatore.equipaggia(attrezzoIniziale);
 
         giocatore.mostraStatistiche();
 
-        Menu menuDelGiorno = new Menu();
         Servizio servizio = new Servizio(giocatore, new SceltaAzioneDaConsole(tastiera));
 
         System.out.println("\n--- INIZIO SERVIZIO TAVOLI ---");
