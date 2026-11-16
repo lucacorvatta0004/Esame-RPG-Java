@@ -1,10 +1,11 @@
 package it.unicam.cs.mpgc.rpg130402.model;
 
 public class Chef {
+    // le vite con cui si inizia e a cui si torna quando si raggiunge un grado nuovo
+    private static final int REPUTAZIONE_MASSIMA = 3;
+
     private final String nome;
-    private int livello;
-    private int velocita;
-    private int maestria;
+    private Carriera carriera;
     private int reputazione;
     private Equipaggiamento strumentoEquipaggiato;
 
@@ -12,10 +13,8 @@ public class Chef {
     public Chef(String nome) {
         Validazione.verificaTestoNonVuoto(nome, "Il nome dello chef");
         this.nome = nome;
-        this.livello = 1;
-        this.velocita = 10;
-        this.maestria = 10;
-        this.reputazione = 3;
+        this.carriera = Carriera.INIZIALE;
+        this.reputazione = REPUTAZIONE_MASSIMA;
     }
 
     public void equipaggia(Equipaggiamento oggetto) {
@@ -24,64 +23,48 @@ public class Chef {
         System.out.println(this.nome + " ha equipaggiato: " + oggetto.getNomeOggetto() + "!");
     }
 
-    public int getMaestriaTotale() {
-        if (this.strumentoEquipaggiato != null) {
-            return this.maestria + this.strumentoEquipaggiato.getBonusMaestria();
-        } else {
-            return this.maestria;
-        }
-    }
-
-    public int getVelocitaTotale() {
-        if (this.strumentoEquipaggiato != null) {
-            return this.velocita + this.strumentoEquipaggiato.getBonusVelocita();
-        } else {
-            return this.velocita;
-        }
-    }
-
-    /** Le statistiche con cui lo chef cucina adesso: quelle base più i bonus dell'attrezzo. */
+    /** Le statistiche con cui lo chef cucina adesso: quelle base del livello più i bonus dell'attrezzo. */
     public Statistiche getStatisticheEffettive() {
-        return new Statistiche(getMaestriaTotale(), getVelocitaTotale());
+        Statistiche base = this.carriera.statisticheBase();
+        if (this.strumentoEquipaggiato == null) {
+            return base;
+        }
+        return base.conBonus(this.strumentoEquipaggiato.getBonusMaestria(), this.strumentoEquipaggiato.getBonusVelocita());
     }
 
     public void mostraStatistiche() {
+        Statistiche effettive = getStatisticheEffettive();
         System.out.println("---------------------------------");
         System.out.println("NOME: " + this.nome);
         System.out.println("GRADO: " + getGrado().getNome());
-        System.out.println("LIVELLO: " + this.livello);
-        System.out.println("VELOCITÀ: " + getVelocitaTotale());
-        System.out.println("MAESTRIA: " + getMaestriaTotale());
+        System.out.println("LIVELLO: " + this.carriera.livello());
+        System.out.println("ESPERIENZA: " + this.carriera.esperienza() + "/" + this.carriera.esperienzaPerSalire());
+        System.out.println("VELOCITÀ: " + effettive.velocita());
+        System.out.println("MAESTRIA: " + effettive.maestria());
         System.out.println("REPUTAZIONE: " + Testo.conNumero(this.reputazione, "vita", "vite"));
         System.out.println("---------------------------------");
     }
 
     public String getNome() { return this.nome; }
-    public Grado getGrado() { return Grado.perLivello(this.livello); }
-    public int getLivello() { return this.livello; }
-    public int getVelocita() { return this.velocita; }
-    public int getMaestriaBase() { return this.maestria; } // senza il bonus dell'equipaggiamento
+    public Carriera getCarriera() { return this.carriera; }
+    public Grado getGrado() { return this.carriera.grado(); }
     public int getReputazione() { return this.reputazione; }
 
     /**
-     * Ripristina le statistiche lette da un salvataggio.
-     * La velocità deve essere almeno 1, perché da lei dipende il tempo di preparazione.
-     * La reputazione deve essere almeno 1: con 0 lo chef è licenziato (game over)
+     * Ripristina i progressi letti da un salvataggio. La carriera è già valida (la controlla il suo costruttore).
+     * La reputazione deve essere da 1 a 3: con 0 lo chef è licenziato (game over)
      * e una partita finita non si può caricare.
      */
-    public void setStatisticheSalvate(int livello, int velocita, int maestria, int reputazione) {
-        Validazione.verificaAlmeno(livello, 1, "Il livello");
-        Validazione.verificaAlmeno(velocita, 1, "La velocità");
-        Validazione.verificaAlmeno(maestria, 0, "La maestria");
-        Validazione.verificaIntervallo(reputazione, 1, 3, "La reputazione salvata");
-        this.livello = livello;
-        this.velocita = velocita;
-        this.maestria = maestria;
+    public void setProgressiSalvati(Carriera carriera, int reputazione) {
+        Validazione.verificaNonNullo(carriera, "La carriera salvata");
+        Validazione.verificaIntervallo(reputazione, 1, REPUTAZIONE_MASSIMA, "La reputazione salvata");
+        this.carriera = carriera;
         this.reputazione = reputazione;
     }
 
     /**
      * Prepara un piatto con l'azione scelta. Se il piatto brucia toglie un punto di reputazione.
+     * Poi aggiunge o toglie l'esperienza del piatto (vedi {@link Carriera}).
      * Il tempo di preparazione si calcola dalla velocità usata dall'azione.
      * Visibile solo nel model: da fuori si cucina con un {@link Servizio}, che accetta
      * solo le azioni sbloccate dal grado e ancora disponibili.
@@ -94,8 +77,20 @@ public class Chef {
         if (!preparazione.riuscito()) {
             this.reputazione--;
         }
+        Progresso progresso = aggiungiEsperienza(Carriera.esperienzaPer(piatto, preparazione.riuscito()));
         int minutiPreparazione = piatto.minutiDiPreparazione(preparazione.statisticheUsate().velocita());
-        return new EsitoPiatto(piatto, preparazione, minutiPreparazione, this.reputazione);
+        return new EsitoPiatto(piatto, preparazione, minutiPreparazione, progresso, this.reputazione);
+    }
+
+    /** Cambia l'esperienza (anche in negativo); se lo chef arriva a un grado mai raggiunto, le vite tornano al massimo. */
+    private Progresso aggiungiEsperienza(int variazione) {
+        Carriera prima = this.carriera;
+        this.carriera = prima.conEsperienza(variazione);
+        Progresso progresso = new Progresso(variazione, prima, this.carriera);
+        if (progresso.isNuovoGradoRaggiunto()) {
+            this.reputazione = REPUTAZIONE_MASSIMA;
+        }
+        return progresso;
     }
 
     public boolean isLicenziato() {

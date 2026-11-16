@@ -21,4 +21,11 @@ public record EsitoServizio(List<EsitoPiatto> esitiPiatti, boolean chefLicenziat
     public int piattiBruciati() {
         return esitiPiatti.size() - piattiRiusciti();
     }
+
+    /** L'esperienza guadagnata in tutto il servizio: la somma di quella dei piatti (negativa se persa). */
+    public int esperienzaGuadagnata() {
+        return esitiPiatti.stream()
+                .mapToInt(esitoPiatto -> esitoPiatto.progresso().esperienzaGuadagnata())
+                .sum();
+    }
 }

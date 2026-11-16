@@ -1,5 +1,6 @@
 package it.unicam.cs.mpgc.rpg130402;
 
+import it.unicam.cs.mpgc.rpg130402.model.Carriera;
 import it.unicam.cs.mpgc.rpg130402.model.Chef;
 import it.unicam.cs.mpgc.rpg130402.model.Comanda;
 import it.unicam.cs.mpgc.rpg130402.model.Equipaggiamento;
@@ -7,6 +8,7 @@ import it.unicam.cs.mpgc.rpg130402.model.EsitoPiatto;
 import it.unicam.cs.mpgc.rpg130402.model.EsitoServizio;
 import it.unicam.cs.mpgc.rpg130402.model.Menu;
 import it.unicam.cs.mpgc.rpg130402.model.Piatto;
+import it.unicam.cs.mpgc.rpg130402.model.Progresso;
 import it.unicam.cs.mpgc.rpg130402.model.Servizio;
 import it.unicam.cs.mpgc.rpg130402.model.Testo;
 import it.unicam.cs.mpgc.rpg130402.persistence.Catalogo;
@@ -143,6 +145,44 @@ public class Main {
             System.out.println("DISASTRO! Piatto bruciato. (Serve " + piatto.getMaestriaRichiesta() + " maestria, hai " + esitoPiatto.maestriaUsata() + ")");
             System.out.println("Attenzione! Reputazione scesa a: " + esitoPiatto.reputazioneDopo());
         }
+        mostraProgresso(esitoPiatto);
+    }
+
+    private static void mostraProgresso(EsitoPiatto esitoPiatto) {
+        Progresso progresso = esitoPiatto.progresso();
+        Carriera carriera = progresso.dopo();
+        System.out.println("Esperienza: " + conSegno(progresso.esperienzaGuadagnata())
+                + " (" + carriera.esperienza() + "/" + carriera.esperienzaPerSalire()
+                + " per salire al livello " + (carriera.livello() + 1) + ")");
+
+        if (progresso.isSalitoDiLivello()) {
+            System.out.println("Sei salito al livello " + carriera.livello() + "!");
+        }
+        if (progresso.isScesoDiLivello()) {
+            System.out.println("Sei sceso al livello " + carriera.livello() + ".");
+        }
+        if (progresso.isPromosso()) {
+            mostraPromozione(esitoPiatto);
+        }
+        if (progresso.isRetrocesso()) {
+            System.out.println("Retrocesso a " + carriera.grado().getNome() + ".");
+        }
+    }
+
+    /** Le vite tornano solo se il grado è nuovo: tornare a un grado già raggiunto non le ridà. */
+    private static void mostraPromozione(EsitoPiatto esitoPiatto) {
+        Progresso progresso = esitoPiatto.progresso();
+        String messaggio = "Promosso a " + progresso.dopo().grado().getNome() + "!";
+        if (progresso.isNuovoGradoRaggiunto()) {
+            messaggio += " Vite di nuovo a " + esitoPiatto.reputazioneDopo() + ".";
+        }
+        System.out.println(messaggio);
+        System.out.println("Le mosse nuove arrivano dal prossimo servizio.");
+    }
+
+    /** Il numero con il segno davanti anche se positivo: "+20", "-15". */
+    private static String conSegno(int numero) {
+        return String.format("%+d", numero);
     }
 
     private static void mostraServizioCompletato(Comanda tavolo, EsitoServizio esito) {
@@ -153,6 +193,7 @@ public class Main {
         } else {
             System.out.println("I clienti sono FURIOSI! Hanno ricevuto solo " + Testo.conNumero(esito.piattiRiusciti(), "piatto", "piatti") + " su " + esito.esitiPiatti().size() + " e lasciano una recensione pessima!");
         }
+        System.out.println("Esperienza del servizio: " + conSegno(esito.esperienzaGuadagnata()) + ".");
     }
 
     /** Reputazione 0 = carriera finita: il salvataggio si cancella e la prossima partita riparte da capo. */
