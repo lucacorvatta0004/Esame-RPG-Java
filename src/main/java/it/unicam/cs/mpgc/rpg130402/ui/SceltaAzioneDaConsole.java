@@ -20,7 +20,7 @@ public class SceltaAzioneDaConsole implements SceltaAzione {
 
     @Override
     public Azione scegli(Piatto piatto, List<Azione> azioniDisponibili) {
-        System.out.println("\n-> Prossimo piatto: " + piatto.getNomePiatto() + " ("
+        System.out.println("-> Prossimo piatto: " + piatto.getNomePiatto() + " ("
                 + Testo.conNumero(piatto.getDifficoltaStelle(), "stella", "stelle")
                 + ", richiede " + piatto.getMaestriaRichiesta() + " maestria)");
         mostraMenu(azioniDisponibili);

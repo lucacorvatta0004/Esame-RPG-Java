@@ -1,15 +1,11 @@
 package it.unicam.cs.mpgc.rpg130402;
 
-import it.unicam.cs.mpgc.rpg130402.model.Carriera;
 import it.unicam.cs.mpgc.rpg130402.model.Chef;
-import it.unicam.cs.mpgc.rpg130402.model.Comanda;
 import it.unicam.cs.mpgc.rpg130402.model.Equipaggiamento;
-import it.unicam.cs.mpgc.rpg130402.model.EsitoPiatto;
 import it.unicam.cs.mpgc.rpg130402.model.EsitoServizio;
 import it.unicam.cs.mpgc.rpg130402.model.Menu;
-import it.unicam.cs.mpgc.rpg130402.model.Piatto;
-import it.unicam.cs.mpgc.rpg130402.model.Progresso;
-import it.unicam.cs.mpgc.rpg130402.model.Servizio;
+import it.unicam.cs.mpgc.rpg130402.model.Partita;
+import it.unicam.cs.mpgc.rpg130402.model.Tavolo;
 import it.unicam.cs.mpgc.rpg130402.model.Testo;
 import it.unicam.cs.mpgc.rpg130402.persistence.Catalogo;
 import it.unicam.cs.mpgc.rpg130402.persistence.CatalogoException;
@@ -17,6 +13,7 @@ import it.unicam.cs.mpgc.rpg130402.persistence.CatalogoJson;
 import it.unicam.cs.mpgc.rpg130402.persistence.RepositoryPartita;
 import it.unicam.cs.mpgc.rpg130402.persistence.RepositoryPartitaJson;
 import it.unicam.cs.mpgc.rpg130402.persistence.SalvataggioException;
+import it.unicam.cs.mpgc.rpg130402.ui.OsservatoreServizioDaConsole;
 import it.unicam.cs.mpgc.rpg130402.ui.SceltaAzioneDaConsole;
 
 import java.nio.file.Path;
@@ -49,45 +46,49 @@ public class Main {
         giocaPartita(new Menu(catalogo.getPiatti()), attrezzoIniziale);
     }
 
+    /**
+     * Gioca un servizio dopo l'altro. Dopo ogni servizio salva e chiede se continuare;
+     * al game over cancella il salvataggio e la partita finisce.
+     */
     private static void giocaPartita(Menu menuDelGiorno, Equipaggiamento attrezzoIniziale) {
         Scanner tastiera = new Scanner(System.in);
         // l'unico punto che sceglie il salvataggio in JSON: il file sta nella cartella da cui si avvia il gioco
         RepositoryPartita repository = new RepositoryPartitaJson(Path.of("salvataggio.json"));
         Chef giocatore = preparaChef(tastiera, repository);
-
         giocatore.equipaggia(attrezzoIniziale);
+        Partita partita = new Partita(giocatore, menuDelGiorno, new SceltaAzioneDaConsole(tastiera));
 
-        giocatore.mostraStatistiche();
-
-        Servizio servizio = new Servizio(giocatore, new SceltaAzioneDaConsole(tastiera));
-
-        System.out.println("\n--- INIZIO SERVIZIO TAVOLI ---");
-
-        Comanda tavolo1 = menuDelGiorno.generaComandaCasuale(1, 3, giocatore.getGrado().getStelleMassime());
-        tavolo1.stampaScontrino();
-
-        System.out.println("\n" + giocatore.getNome() + " inizia a preparare il Tavolo " + tavolo1.getNumeroTavolo() + "...");
-        EsitoServizio esito = servizio.serviTavolo(tavolo1, Main::mostraEsitoPiatto);
-
-        if (esito.chefLicenziato()) {
-            System.out.println("\nGAME OVER! Hai bruciato troppi piatti, sei stato licenziato.");
-            chiudiCarriera(repository);
-        } else {
-            mostraServizioCompletato(tavolo1, esito);
-
-            System.out.println("\n--- FINE TURNO ---");
-            System.out.println("Salvataggio progressi in corso...");
-            salvaChef(repository, giocatore);
+        boolean unAltroServizio = true;
+        while (unAltroServizio) {
+            EsitoServizio esito = giocaServizio(partita, giocatore);
+            if (esito.chefLicenziato()) {
+                System.out.println("\nGAME OVER! Hai perso tutta la reputazione, sei stato licenziato.");
+                chiudiCarriera(repository);
+                unAltroServizio = false;
+            } else {
+                mostraFineServizio(esito);
+                salvaChef(repository, giocatore);
+                unAltroServizio = vuoleUnAltroServizio(tastiera, giocatore);
+            }
         }
 
         tastiera.close();
+    }
+
+    private static EsitoServizio giocaServizio(Partita partita, Chef giocatore) {
+        giocatore.mostraStatistiche();
+        System.out.println("\n=== INIZIO SERVIZIO ===");
+        System.out.println("Oggi arrivano " + Testo.conNumero(giocatore.getGrado().getTavoliPerServizio(), "tavolo", "tavoli")
+                + ", uno ogni " + Tavolo.MINUTI_TRA_DUE_ARRIVI + " minuti. Ogni tavolo aspetta al massimo "
+                + Tavolo.PAZIENZA_IN_MINUTI + " minuti da quando si siede.");
+        return partita.giocaServizio(new OsservatoreServizioDaConsole());
     }
 
     /** Carica lo chef salvato oppure ne crea uno nuovo: restituisce sempre uno chef. */
     private static Chef preparaChef(Scanner tastiera, RepositoryPartita repository) {
         System.out.println("Vuoi caricare l'ultimo salvataggio? (scrivi 'si' o 'no')");
 
-        if (tastiera.nextLine().equals("si")) {
+        if (rispondeSi(tastiera)) {
             Optional<Chef> chefSalvato = caricaChef(repository);
             if (chefSalvato.isPresent()) {
                 return chefSalvato.get();
@@ -135,65 +136,25 @@ public class Main {
         }
     }
 
-    private static void mostraEsitoPiatto(EsitoPiatto esitoPiatto) {
-        Piatto piatto = esitoPiatto.piatto();
-        System.out.println("Tempo di preparazione: " + Testo.conNumero(esitoPiatto.minutiPreparazione(), "minuto", "minuti"));
-
-        if (esitoPiatto.riuscito()) {
-            System.out.println("SUCCESSO! Piatto riuscito.");
-        } else {
-            System.out.println("DISASTRO! Piatto bruciato. (Serve " + piatto.getMaestriaRichiesta() + " maestria, hai " + esitoPiatto.maestriaUsata() + ")");
-            System.out.println("Attenzione! Reputazione scesa a: " + esitoPiatto.reputazioneDopo());
-        }
-        mostraProgresso(esitoPiatto);
+    private static void mostraFineServizio(EsitoServizio esito) {
+        System.out.println("\n=== FINE SERVIZIO ===");
+        System.out.println("Tavoli serviti: " + esito.tavoliServiti() + " su " + esito.tavoli().size()
+                + ", tavoli andati via: " + esito.tavoliAndatiVia() + ".");
+        System.out.println("Esperienza del servizio: " + Testo.conSegno(esito.esperienzaGuadagnata()) + ".");
     }
 
-    private static void mostraProgresso(EsitoPiatto esitoPiatto) {
-        Progresso progresso = esitoPiatto.progresso();
-        Carriera carriera = progresso.dopo();
-        System.out.println("Esperienza: " + conSegno(progresso.esperienzaGuadagnata())
-                + " (" + carriera.esperienza() + "/" + carriera.esperienzaPerSalire()
-                + " per salire al livello " + (carriera.livello() + 1) + ")");
-
-        if (progresso.isSalitoDiLivello()) {
-            System.out.println("Sei salito al livello " + carriera.livello() + "!");
+    private static boolean vuoleUnAltroServizio(Scanner tastiera, Chef giocatore) {
+        System.out.println("\nVuoi fare un altro servizio? (scrivi 'si' o 'no')");
+        if (rispondeSi(tastiera)) {
+            return true;
         }
-        if (progresso.isScesoDiLivello()) {
-            System.out.println("Sei sceso al livello " + carriera.livello() + ".");
-        }
-        if (progresso.isPromosso()) {
-            mostraPromozione(esitoPiatto);
-        }
-        if (progresso.isRetrocesso()) {
-            System.out.println("Retrocesso a " + carriera.grado().getNome() + ".");
-        }
+        System.out.println("A presto, " + giocatore.getNome() + "! Per riprendere la carriera, la prossima volta rispondi 'si' alla prima domanda.");
+        return false;
     }
 
-    /** Le vite tornano solo se il grado è nuovo: tornare a un grado già raggiunto non le ridà. */
-    private static void mostraPromozione(EsitoPiatto esitoPiatto) {
-        Progresso progresso = esitoPiatto.progresso();
-        String messaggio = "Promosso a " + progresso.dopo().grado().getNome() + "!";
-        if (progresso.isNuovoGradoRaggiunto()) {
-            messaggio += " Vite di nuovo a " + esitoPiatto.reputazioneDopo() + ".";
-        }
-        System.out.println(messaggio);
-        System.out.println("Le mosse nuove arrivano dal prossimo servizio.");
-    }
-
-    /** Il numero con il segno davanti anche se positivo: "+20", "-15". */
-    private static String conSegno(int numero) {
-        return String.format("%+d", numero);
-    }
-
-    private static void mostraServizioCompletato(Comanda tavolo, EsitoServizio esito) {
-        System.out.println("\nServizio per il Tavolo " + tavolo.getNumeroTavolo() + " completato!");
-
-        if (esito.piattiBruciati() == 0) {
-            System.out.println("I clienti sono entusiasti! Hanno ricevuto tutti i piatti in modo perfetto.");
-        } else {
-            System.out.println("I clienti sono FURIOSI! Hanno ricevuto solo " + Testo.conNumero(esito.piattiRiusciti(), "piatto", "piatti") + " su " + esito.esitiPiatti().size() + " e lasciano una recensione pessima!");
-        }
-        System.out.println("Esperienza del servizio: " + conSegno(esito.esperienzaGuadagnata()) + ".");
+    /** Solo "si" vale come sì (anche con spazi prima o dopo); qualunque altra risposta vale come no. */
+    private static boolean rispondeSi(Scanner tastiera) {
+        return tastiera.nextLine().strip().equals("si");
     }
 
     /** Reputazione 0 = carriera finita: il salvataggio si cancella e la prossima partita riparte da capo. */
@@ -207,6 +168,7 @@ public class Main {
     }
 
     private static void salvaChef(RepositoryPartita repository, Chef giocatore) {
+        System.out.println("Salvataggio progressi in corso...");
         try {
             repository.salva(giocatore);
             System.out.println("Salvataggio completato con successo!");

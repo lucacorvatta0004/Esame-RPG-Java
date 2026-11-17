@@ -14,4 +14,9 @@ public final class Testo {
         String parola = (numero == 1) ? singolare : plurale;
         return numero + " " + parola;
     }
+
+    /** Il numero con il segno davanti anche se positivo: "+20", "-15". */
+    public static String conSegno(int numero) {
+        return String.format("%+d", numero);
+    }
 }

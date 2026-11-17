@@ -63,11 +63,11 @@ public class Chef {
     }
 
     /**
-     * Prepara un piatto con l'azione scelta. Se il piatto brucia toglie un punto di reputazione.
+     * Prepara un piatto con l'azione scelta. Se il piatto brucia toglie una vita (vedi {@link #perdiReputazione()}).
      * Poi aggiunge o toglie l'esperienza del piatto (vedi {@link Carriera}).
      * Il tempo di preparazione si calcola dalla velocità usata dall'azione.
-     * Visibile solo nel model: da fuori si cucina con un {@link Servizio}, che accetta
-     * solo le azioni sbloccate dal grado e ancora disponibili.
+     * Visibile solo nel model: da fuori si cucina giocando un servizio della {@link Partita};
+     * il {@link Servizio} accetta solo le azioni sbloccate dal grado e ancora disponibili.
      */
     EsitoPiatto cucina(Piatto piatto, Azione azione) {
         Validazione.verificaNonNullo(piatto, "Il piatto da cucinare");
@@ -75,7 +75,7 @@ public class Chef {
 
         Preparazione preparazione = azione.esegui(piatto, getStatisticheEffettive());
         if (!preparazione.riuscito()) {
-            this.reputazione--;
+            perdiReputazione();
         }
         Progresso progresso = aggiungiEsperienza(Carriera.esperienzaPer(piatto, preparazione.riuscito()));
         int minutiPreparazione = piatto.minutiDiPreparazione(preparazione.statisticheUsate().velocita());
@@ -91,6 +91,19 @@ public class Chef {
             this.reputazione = REPUTAZIONE_MASSIMA;
         }
         return progresso;
+    }
+
+    /**
+     * Toglie una vita: succede quando un piatto brucia e quando un tavolo se ne va perché ha aspettato troppo.
+     * Visibile solo nel model, come {@link #cucina}.
+     *
+     * @throws IllegalStateException se lo chef è già licenziato: la reputazione non scende sotto 0
+     */
+    void perdiReputazione() {
+        if (isLicenziato()) {
+            throw new IllegalStateException("Lo chef " + this.nome + " è già stato licenziato");
+        }
+        this.reputazione--;
     }
 
     public boolean isLicenziato() {

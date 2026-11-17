@@ -1,48 +1,116 @@
 package it.unicam.cs.mpgc.rpg130402.model;
 
-import java.util.ArrayList;
+import java.util.ArrayDeque;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.Queue;
 
 /**
- * Un servizio in cucina: lo chef prepara i piatti dei tavoli con le azioni scelte dal giocatore.
+ * Un servizio in cucina, con il suo orologio in minuti simulati.
+ * I tavoli si siedono uno dopo l'altro (vedi {@link Tavolo}); lo chef cucina un piatto alla volta per il primo
+ * tavolo arrivato tra quelli che aspettano, e ogni piatto fa avanzare l'orologio dei suoi minuti di preparazione.
+ * Un piatto iniziato non si interrompe: un tavolo se ne va solo tra un piatto e l'altro.
  * Le azioni si creano all'inizio del servizio, quindi gli usi delle speciali valgono per tutto il servizio.
+ * Si gioca una volta sola, dalla {@link Partita}.
  */
-public class Servizio {
+class Servizio {
     private final Chef chef;
     private final SceltaAzione sceltaAzione;
     private final List<Azione> azioni;
+    private final List<Tavolo> tavoli;
+    private final Queue<Tavolo> tavoliInArrivo;
+    private final Queue<Tavolo> tavoliInAttesa;
+    private int minuto;
 
-    public Servizio(Chef chef, SceltaAzione sceltaAzione) {
+    /** Le comande sono una per tavolo; i tavoli arrivano nell'ordine dei loro minuti di arrivo. */
+    Servizio(Chef chef, SceltaAzione sceltaAzione, List<Comanda> comande) {
         Validazione.verificaNonNullo(chef, "Lo chef del servizio");
         Validazione.verificaNonNullo(sceltaAzione, "La scelta delle azioni");
+        Validazione.verificaListaNonVuota(comande, "Le comande del servizio");
         this.chef = chef;
         this.sceltaAzione = sceltaAzione;
         this.azioni = chef.getGrado().creaAzioniPerServizio();
+        this.tavoli = comande.stream()
+                .map(Tavolo::new)
+                .sorted(Comparator.comparingInt(Tavolo::getMinutoArrivo))
+                .toList();
+        this.tavoliInArrivo = new ArrayDeque<>(tavoli);
+        this.tavoliInAttesa = new ArrayDeque<>();
+        this.minuto = 0;
     }
 
     /**
-     * Prepara i piatti della comanda nell'ordine in cui sono stati ordinati, ognuno con l'azione scelta.
-     * Dopo ogni piatto passa il suo esito a dopoOgniPiatto (per esempio per mostrarlo subito).
-     * Se lo chef viene licenziato il servizio si interrompe e i piatti rimanenti non vengono preparati.
+     * Gioca il servizio e racconta all'osservatore ogni evento mentre accade.
+     * Finisce quando ogni tavolo è stato servito o è andato via, oppure subito quando lo chef viene licenziato.
      *
      * @throws IllegalStateException se la scelta restituisce un'azione che non è tra quelle disponibili
      */
-    public EsitoServizio serviTavolo(Comanda comanda, Consumer<EsitoPiatto> dopoOgniPiatto) {
-        Validazione.verificaNonNullo(comanda, "La comanda da servire");
-        Validazione.verificaNonNullo(dopoOgniPiatto, "Cosa fare dopo ogni piatto");
-        List<EsitoPiatto> esitiPiatti = new ArrayList<>();
-
-        for (Piatto piatto : comanda.getPiattiOrdinati()) {
-            EsitoPiatto esitoPiatto = chef.cucina(piatto, scegliAzione(piatto));
-            esitiPiatti.add(esitoPiatto);
-            dopoOgniPiatto.accept(esitoPiatto);
-            if (chef.isLicenziato()) {
-                break;
+    EsitoServizio gioca(OsservatoreServizio osservatore) {
+        Validazione.verificaNonNullo(osservatore, "L'osservatore del servizio");
+        while (isInCorso()) {
+            accogliTavoliArrivati(osservatore);
+            mandaViaTavoliSenzaPazienza(osservatore);
+            if (isInCorso()) {
+                avanza(osservatore);
             }
         }
+        return new EsitoServizio(tavoli, chef.isLicenziato());
+    }
 
-        return new EsitoServizio(esitiPiatti, chef.isLicenziato());
+    /** Il servizio va avanti finché ci sono tavoli da aspettare o da servire e lo chef non è licenziato. */
+    private boolean isInCorso() {
+        boolean ciSonoTavoli = !tavoliInArrivo.isEmpty() || !tavoliInAttesa.isEmpty();
+        return ciSonoTavoli && !chef.isLicenziato();
+    }
+
+    /** Fa sedere i tavoli che sono arrivati entro il minuto attuale, anche mentre lo chef cucinava. */
+    private void accogliTavoliArrivati(OsservatoreServizio osservatore) {
+        while (!tavoliInArrivo.isEmpty() && tavoliInArrivo.peek().getMinutoArrivo() <= minuto) {
+            Tavolo tavolo = tavoliInArrivo.poll();
+            tavoliInAttesa.add(tavolo);
+            osservatore.tavoloArrivato(tavolo);
+        }
+    }
+
+    /** Ogni tavolo che ha superato il suo minuto limite se ne va e costa una vita; con il game over ci si ferma. */
+    private void mandaViaTavoliSenzaPazienza(OsservatoreServizio osservatore) {
+        Iterator<Tavolo> iteratore = tavoliInAttesa.iterator();
+        while (iteratore.hasNext() && !chef.isLicenziato()) {
+            Tavolo tavolo = iteratore.next();
+            if (tavolo.haFinitoLaPazienza(minuto)) {
+                iteratore.remove();
+                tavolo.vaVia();
+                chef.perdiReputazione();
+                osservatore.tavoloAndatoVia(tavolo, chef.getReputazione());
+            }
+        }
+    }
+
+    /** Se nessun tavolo aspetta, l'orologio salta all'arrivo del prossimo; altrimenti lo chef cucina un piatto. */
+    private void avanza(OsservatoreServizio osservatore) {
+        if (tavoliInAttesa.isEmpty()) {
+            minuto = tavoliInArrivo.peek().getMinutoArrivo();
+        } else {
+            cucinaProssimoPiatto(osservatore);
+        }
+    }
+
+    /** Cucina il prossimo piatto del primo tavolo in attesa: l'orologio avanza dei minuti di preparazione. */
+    private void cucinaProssimoPiatto(OsservatoreServizio osservatore) {
+        Tavolo tavolo = tavoliInAttesa.peek();
+        Piatto piatto = tavolo.prossimoPiatto();
+        osservatore.piattoDaPreparare(tavolo, minuto);
+
+        EsitoPiatto esitoPiatto = chef.cucina(piatto, scegliAzione(piatto));
+        minuto += esitoPiatto.minutiPreparazione();
+        tavolo.registraPiatto(esitoPiatto);
+        osservatore.piattoPreparato(esitoPiatto);
+
+        if (tavolo.isServito()) {
+            tavoliInAttesa.remove();
+            osservatore.tavoloServito(tavolo, minuto);
+        }
     }
 
     /** Fa scegliere l'azione e accetta solo una di quelle proposte: sbloccate dal grado e con usi rimasti. */

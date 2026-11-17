@@ -10,22 +10,26 @@ import java.util.function.Supplier;
  * Ogni grado si raggiunge a un livello minimo, sblocca le sue azioni e tiene quelle dei gradi precedenti.
  * Ogni grado ha anche un massimo di stelle per i piatti che riceve: al Commis arrivano solo piatti
  * che si riescono con la Cottura normale (2 stelle = 20 maestria, un Commis col coltello ne ha 25).
+ * Infine ogni grado dice quanti tavoli arrivano in un servizio: più si sale, più tavoli.
  */
 public enum Grado {
-    COMMIS("Commis", 1, 2, List.of(CotturaNormale::new, Improvvisazione::new)),
-    CAPO_PARTITA("Capo Partita", 3, 3, List.of(FuocoAlto::new)),
-    SOUS_CHEF("Sous-Chef", 5, 4, List.of(RicettaCollaudata::new)),
-    CHEF("Chef", 7, 5, List.of(PiattoFirma::new));
+    COMMIS("Commis", 1, 2, 3, List.of(CotturaNormale::new, Improvvisazione::new)),
+    CAPO_PARTITA("Capo Partita", 3, 3, 4, List.of(FuocoAlto::new)),
+    SOUS_CHEF("Sous-Chef", 5, 4, 5, List.of(RicettaCollaudata::new)),
+    CHEF("Chef", 7, 5, 6, List.of(PiattoFirma::new));
 
     private final String nome;
     private final int livelloMinimo;
     private final int stelleMassime;
+    private final int tavoliPerServizio;
     private final List<Supplier<Azione>> azioniSbloccate;
 
-    Grado(String nome, int livelloMinimo, int stelleMassime, List<Supplier<Azione>> azioniSbloccate) {
+    Grado(String nome, int livelloMinimo, int stelleMassime, int tavoliPerServizio,
+          List<Supplier<Azione>> azioniSbloccate) {
         this.nome = nome;
         this.livelloMinimo = livelloMinimo;
         this.stelleMassime = stelleMassime;
+        this.tavoliPerServizio = tavoliPerServizio;
         this.azioniSbloccate = azioniSbloccate;
     }
 
@@ -45,6 +49,11 @@ public enum Grado {
     /** Le stelle massime dei piatti che lo chef può ricevere a questo grado. */
     public int getStelleMassime() {
         return stelleMassime;
+    }
+
+    /** Quanti tavoli arrivano in un servizio dello chef che ha questo grado. */
+    public int getTavoliPerServizio() {
+        return tavoliPerServizio;
     }
 
     /**
