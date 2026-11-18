@@ -1,10 +1,13 @@
 package it.unicam.cs.mpgc.rpg130402;
 
+import it.unicam.cs.mpgc.rpg130402.model.Attrezzatura;
 import it.unicam.cs.mpgc.rpg130402.model.Chef;
-import it.unicam.cs.mpgc.rpg130402.model.Equipaggiamento;
+import it.unicam.cs.mpgc.rpg130402.model.Cucina;
 import it.unicam.cs.mpgc.rpg130402.model.EsitoServizio;
 import it.unicam.cs.mpgc.rpg130402.model.Menu;
 import it.unicam.cs.mpgc.rpg130402.model.Partita;
+import it.unicam.cs.mpgc.rpg130402.model.SceltaAttrezzi;
+import it.unicam.cs.mpgc.rpg130402.model.SceltaAzione;
 import it.unicam.cs.mpgc.rpg130402.model.Tavolo;
 import it.unicam.cs.mpgc.rpg130402.model.Testo;
 import it.unicam.cs.mpgc.rpg130402.persistence.Catalogo;
@@ -14,6 +17,7 @@ import it.unicam.cs.mpgc.rpg130402.persistence.RepositoryPartita;
 import it.unicam.cs.mpgc.rpg130402.persistence.RepositoryPartitaJson;
 import it.unicam.cs.mpgc.rpg130402.persistence.SalvataggioException;
 import it.unicam.cs.mpgc.rpg130402.ui.OsservatoreServizioDaConsole;
+import it.unicam.cs.mpgc.rpg130402.ui.SceltaAttrezziDaConsole;
 import it.unicam.cs.mpgc.rpg130402.ui.SceltaAzioneDaConsole;
 
 import java.nio.file.Path;
@@ -21,8 +25,6 @@ import java.util.Optional;
 import java.util.Scanner;
 
 public class Main {
-    // l'attrezzo con cui parte ogni chef: qui c'è solo il nome, i bonus sono nel catalogo (attrezzi.json)
-    private static final String ATTREZZO_INIZIALE = "Coltello in Ceramica";
 
     /**
      * Prima di tutto legge i dati fissi del gioco. Se mancano o sono rovinati è un errore di chi ha preparato
@@ -32,35 +34,37 @@ public class Main {
         System.out.println("=== BATTLE OF THE BRIGATA ===\n");
 
         Catalogo catalogo;
-        Equipaggiamento attrezzoIniziale;
         try {
             // l'unico punto che sceglie di leggere i dati fissi dai file JSON tra le risorse
             catalogo = new CatalogoJson();
-            attrezzoIniziale = catalogo.getAttrezzo(ATTREZZO_INIZIALE);
         } catch (CatalogoException e) {
             System.err.println("ERRORE: il gioco non può partire, i suoi dati sono rovinati (" + e.getMessage() + ").");
             System.exit(1);
             return; // il compilatore non sa che System.exit non torna: senza return, sotto, catalogo risulterebbe non assegnato
         }
 
-        giocaPartita(new Menu(catalogo.getPiatti()), attrezzoIniziale);
+        giocaPartita(catalogo);
     }
 
     /**
-     * Gioca un servizio dopo l'altro. Dopo ogni servizio salva e chiede se continuare;
+     * Gioca un servizio dopo l'altro: prima di ogni servizio si scelgono gli attrezzi, poi si mostrano
+     * le statistiche con quegli attrezzi. Dopo ogni servizio salva e chiede se continuare;
      * al game over cancella il salvataggio e la partita finisce.
      */
-    private static void giocaPartita(Menu menuDelGiorno, Equipaggiamento attrezzoIniziale) {
+    private static void giocaPartita(Catalogo catalogo) {
         Scanner tastiera = new Scanner(System.in);
         // l'unico punto che sceglie il salvataggio in JSON: il file sta nella cartella da cui si avvia il gioco
-        RepositoryPartita repository = new RepositoryPartitaJson(Path.of("salvataggio.json"));
+        RepositoryPartita repository = new RepositoryPartitaJson(Path.of("salvataggio.json"), catalogo);
         Chef giocatore = preparaChef(tastiera, repository);
-        giocatore.equipaggia(attrezzoIniziale);
-        Partita partita = new Partita(giocatore, menuDelGiorno, new SceltaAzioneDaConsole(tastiera));
+        Partita partita = new Partita(giocatore, creaCucina(catalogo));
+        SceltaAttrezzi sceltaAttrezzi = new SceltaAttrezziDaConsole(tastiera);
+        SceltaAzione sceltaAzione = new SceltaAzioneDaConsole(tastiera);
 
         boolean unAltroServizio = true;
         while (unAltroServizio) {
-            EsitoServizio esito = giocaServizio(partita, giocatore);
+            partita.scegliAttrezzi(sceltaAttrezzi);
+            annunciaServizio(giocatore);
+            EsitoServizio esito = partita.giocaServizio(sceltaAzione, new OsservatoreServizioDaConsole());
             if (esito.chefLicenziato()) {
                 System.out.println("\nGAME OVER! Hai perso tutta la reputazione, sei stato licenziato.");
                 chiudiCarriera(repository);
@@ -75,13 +79,17 @@ public class Main {
         tastiera.close();
     }
 
-    private static EsitoServizio giocaServizio(Partita partita, Chef giocatore) {
+    /** Il menu e l'attrezzatura della cucina, presi dal catalogo. */
+    private static Cucina creaCucina(Catalogo catalogo) {
+        return new Cucina(new Menu(catalogo.getPiatti()), new Attrezzatura(catalogo.getAttrezzi()));
+    }
+
+    private static void annunciaServizio(Chef giocatore) {
         giocatore.mostraStatistiche();
         System.out.println("\n=== INIZIO SERVIZIO ===");
         System.out.println("Oggi arrivano " + Testo.conNumero(giocatore.getGrado().getTavoliPerServizio(), "tavolo", "tavoli")
                 + ", uno ogni " + Tavolo.MINUTI_TRA_DUE_ARRIVI + " minuti. Ogni tavolo aspetta al massimo "
                 + Tavolo.PAZIENZA_IN_MINUTI + " minuti da quando si siede.");
-        return partita.giocaServizio(new OsservatoreServizioDaConsole());
     }
 
     /** Carica lo chef salvato oppure ne crea uno nuovo: restituisce sempre uno chef. */

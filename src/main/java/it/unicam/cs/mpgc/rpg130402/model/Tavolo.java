@@ -13,7 +13,7 @@ public class Tavolo {
     /** Ogni quanti minuti si siede un tavolo nuovo. */
     public static final int MINUTI_TRA_DUE_ARRIVI = 25;
     /** Quanti minuti aspetta un tavolo, da quando si siede, prima di andarsene. */
-    public static final int PAZIENZA_IN_MINUTI = 50;
+    public static final int PAZIENZA_IN_MINUTI = 40;
 
     private final Comanda comanda;
     private final List<EsitoPiatto> esitiPiatti;

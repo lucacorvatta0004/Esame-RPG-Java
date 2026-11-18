@@ -29,9 +29,10 @@ public interface Azione {
     }
 
     /**
-     * Prepara il piatto partendo dalle statistiche effettive dello chef (base più attrezzo).
-     * Restituisce, mai null, se il piatto è riuscito e le statistiche usate davvero
-     * (con i bonus della mossa), da cui lo chef calcola il tempo di preparazione.
+     * Prepara il piatto partendo dalle statistiche effettive dello chef (base più attrezzi).
+     * Restituisce, mai null, se il piatto è riuscito, le statistiche usate davvero
+     * (con i bonus della mossa), da cui lo chef calcola il tempo di preparazione,
+     * e il motivo dell'esito spiegato con la regola di questa mossa, da mostrare al giocatore.
      * Non modifica né il piatto né lo chef: le conseguenze le decide lo chef.
      *
      * @throws IllegalStateException se la mossa non è disponibile

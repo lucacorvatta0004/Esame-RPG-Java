@@ -4,6 +4,9 @@ import java.util.Random;
 
 /** Azione base: lo chef improvvisa e il piatto riesce una volta su due, qualunque sia la maestria. */
 public class Improvvisazione implements Azione {
+    private static final String MOTIVO_SE_RIESCE = "l'improvvisazione è andata bene";
+    private static final String MOTIVO_SE_BRUCIA = "l'improvvisazione è andata male, la maestria non contava";
+
     private final Random generatore;
 
     public Improvvisazione() {
@@ -28,6 +31,7 @@ public class Improvvisazione implements Azione {
 
     @Override
     public Preparazione esegui(Piatto piatto, Statistiche statistiche) {
-        return new Preparazione(generatore.nextBoolean(), statistiche);
+        boolean riuscito = generatore.nextBoolean();
+        return new Preparazione(riuscito, statistiche, riuscito ? MOTIVO_SE_RIESCE : MOTIVO_SE_BRUCIA);
     }
 }

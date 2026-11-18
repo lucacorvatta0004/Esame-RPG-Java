@@ -9,8 +9,10 @@ import java.util.function.Supplier;
  * I gradi della carriera dello chef, dal più basso al più alto.
  * Ogni grado si raggiunge a un livello minimo, sblocca le sue azioni e tiene quelle dei gradi precedenti.
  * Ogni grado ha anche un massimo di stelle per i piatti che riceve: al Commis arrivano solo piatti
- * che si riescono con la Cottura normale (2 stelle = 20 maestria, un Commis col coltello ne ha 25).
+ * che si riescono con la Cottura normale (2 stelle = 20 maestria, un Commis col Coltello in Ceramica ne ha 25:
+ * è l'attrezzo che il Commis sblocca in attrezzi.json, quindi lo ha ogni chef nuovo).
  * Infine ogni grado dice quanti tavoli arrivano in un servizio: più si sale, più tavoli.
+ * Anche gli attrezzi li sblocca il grado (vedi {@link Attrezzo#isSbloccatoDa(Grado)}), con la stessa regola delle azioni.
  */
 public enum Grado {
     COMMIS("Commis", 1, 2, 3, List.of(CotturaNormale::new, Improvvisazione::new)),
@@ -68,7 +70,8 @@ public enum Grado {
                 .toList();
     }
 
-    private boolean comprende(Grado altroGrado) {
+    /** Questo grado comprende l'altro, cioè è lo stesso o uno più alto: quello che sblocca un grado resta nei successivi. */
+    boolean comprende(Grado altroGrado) {
         return altroGrado.compareTo(this) <= 0;
     }
 }

@@ -1,3 +1,8 @@
 [
-  { "nome": "Coltello in Ceramica", "bonusVelocita": 10, "bonusMaestria": 15 }
+  { "nome": "Coltello in Ceramica", "tipo": "COLTELLO", "gradoMinimo": "COMMIS", "bonusVelocita": 10, "bonusMaestria": 15 },
+  { "nome": "Padella Antiaderente", "tipo": "PADELLA", "gradoMinimo": "CAPO_PARTITA", "bonusVelocita": 1, "bonusMaestria": 0 },
+  { "nome": "Padella in Rame", "tipo": "PADELLA", "gradoMinimo": "CAPO_PARTITA", "bonusVelocita": 0, "bonusMaestria": 5 },
+  { "nome": "Forno Ventilato", "tipo": "FORNO", "gradoMinimo": "SOUS_CHEF", "bonusVelocita": 1, "bonusMaestria": 0 },
+  { "nome": "Forno a Vapore", "tipo": "FORNO", "gradoMinimo": "SOUS_CHEF", "bonusVelocita": 0, "bonusMaestria": 5 },
+  { "nome": "Coltello Santoku", "tipo": "COLTELLO", "gradoMinimo": "CHEF", "bonusVelocita": 12, "bonusMaestria": 5 }
 ]

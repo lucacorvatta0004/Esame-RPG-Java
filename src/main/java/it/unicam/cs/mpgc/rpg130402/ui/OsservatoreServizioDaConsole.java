@@ -3,7 +3,6 @@ package it.unicam.cs.mpgc.rpg130402.ui;
 import it.unicam.cs.mpgc.rpg130402.model.Carriera;
 import it.unicam.cs.mpgc.rpg130402.model.EsitoPiatto;
 import it.unicam.cs.mpgc.rpg130402.model.OsservatoreServizio;
-import it.unicam.cs.mpgc.rpg130402.model.Piatto;
 import it.unicam.cs.mpgc.rpg130402.model.Progresso;
 import it.unicam.cs.mpgc.rpg130402.model.Tavolo;
 import it.unicam.cs.mpgc.rpg130402.model.Testo;
@@ -27,13 +26,12 @@ public class OsservatoreServizioDaConsole implements OsservatoreServizio {
 
     @Override
     public void piattoPreparato(EsitoPiatto esitoPiatto) {
-        Piatto piatto = esitoPiatto.piatto();
         System.out.println("Tempo di preparazione: " + Testo.conNumero(esitoPiatto.minutiPreparazione(), "minuto", "minuti"));
 
         if (esitoPiatto.riuscito()) {
             System.out.println("SUCCESSO! Piatto riuscito.");
         } else {
-            System.out.println("DISASTRO! Piatto bruciato. (Serve " + piatto.getMaestriaRichiesta() + " maestria, hai " + esitoPiatto.maestriaUsata() + ")");
+            System.out.println("DISASTRO! Piatto bruciato (" + esitoPiatto.motivo() + ").");
             mostraReputazione(esitoPiatto.reputazioneDopo());
         }
         mostraProgresso(esitoPiatto);
@@ -79,7 +77,8 @@ public class OsservatoreServizioDaConsole implements OsservatoreServizio {
             mostraPromozione(esitoPiatto);
         }
         if (progresso.isRetrocesso()) {
-            System.out.println("Retrocesso a " + carriera.grado().getNome() + ".");
+            System.out.println("Retrocesso a " + carriera.grado().getNome() + ". Dal prossimo servizio non hai più "
+                    + "le mosse e gli attrezzi da " + progresso.prima().grado().getNome() + ".");
         }
     }
 
@@ -91,6 +90,6 @@ public class OsservatoreServizioDaConsole implements OsservatoreServizio {
             messaggio += " Vite di nuovo a " + esitoPiatto.reputazioneDopo() + ".";
         }
         System.out.println(messaggio);
-        System.out.println("Le mosse nuove arrivano dal prossimo servizio.");
+        System.out.println("Le mosse e gli attrezzi nuovi arrivano dal prossimo servizio.");
     }
 }

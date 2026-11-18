@@ -20,6 +20,6 @@ public class PiattoFirma extends AzioneSpeciale {
 
     @Override
     protected Preparazione prepara(Piatto piatto, Statistiche statistiche) {
-        return new Preparazione(true, statistiche);
+        return new Preparazione(true, statistiche, "il piatto firma riesce sempre");
     }
 }

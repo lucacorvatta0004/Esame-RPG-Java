@@ -20,12 +20,17 @@ import java.util.Optional;
  */
 public class RepositoryPartitaJson implements RepositoryPartita {
     private final Path percorsoFile;
+    private final Catalogo catalogo;
     // indentato per leggerlo a occhio; senza l'escape HTML un apostrofo resta un apostrofo (D'Angelo, non D'Angelo)
     private final Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
 
-    /** Il file può anche non esistere ancora: lo crea il primo salvataggio. */
-    public RepositoryPartitaJson(Path percorsoFile) {
+    /**
+     * Il file può anche non esistere ancora: lo crea il primo salvataggio.
+     * Il catalogo serve a ritrovare gli attrezzi, che nel file sono salvati solo per nome.
+     */
+    public RepositoryPartitaJson(Path percorsoFile, Catalogo catalogo) {
         this.percorsoFile = Objects.requireNonNull(percorsoFile, "Il percorso del salvataggio non può essere null");
+        this.catalogo = Objects.requireNonNull(catalogo, "Il catalogo non può essere null");
     }
 
     @Override
@@ -71,7 +76,7 @@ public class RepositoryPartitaJson implements RepositoryPartita {
 
     private Chef creaChef(ChefSalvato chefSalvato) throws SalvataggioException {
         try {
-            return chefSalvato.creaChef();
+            return chefSalvato.creaChef(catalogo);
         } catch (IllegalArgumentException e) {
             throw new SalvataggioException(e.getMessage(), e);
         }

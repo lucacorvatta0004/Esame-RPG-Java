@@ -2,7 +2,7 @@ package it.unicam.cs.mpgc.rpg130402.persistence;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
-import it.unicam.cs.mpgc.rpg130402.model.Equipaggiamento;
+import it.unicam.cs.mpgc.rpg130402.model.Attrezzo;
 import it.unicam.cs.mpgc.rpg130402.model.Piatto;
 
 import java.io.IOException;
@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -26,16 +27,20 @@ public class CatalogoJson implements Catalogo {
 
     private final Gson gson = new Gson();
     private final List<Piatto> piatti;
-    private final Map<String, Equipaggiamento> attrezziPerNome;
+    private final List<Attrezzo> attrezzi;
+    // per trovare un attrezzo dal nome scritto nel salvataggio senza scorrere tutta la lista
+    private final Map<String, Attrezzo> attrezziPerNome;
 
     /**
      * Legge subito i due file, così un dato rovinato si scopre all'avvio e non a metà partita.
      *
-     * @throws CatalogoException se un file manca, è rovinato, è vuoto o ha una voce non valida
+     * @throws CatalogoException se un file manca, è rovinato, è vuoto, ha una voce non valida
+     *                           o ha due attrezzi con lo stesso nome
      */
     public CatalogoJson() {
         this.piatti = leggi(FILE_PIATTI, VocePiatto[].class, VocePiatto::creaPiatto);
-        this.attrezziPerNome = perNome(leggi(FILE_ATTREZZI, VoceAttrezzo[].class, VoceAttrezzo::creaEquipaggiamento));
+        this.attrezzi = leggi(FILE_ATTREZZI, VoceAttrezzo[].class, VoceAttrezzo::creaAttrezzo);
+        this.attrezziPerNome = perNome(attrezzi);
     }
 
     @Override
@@ -44,12 +49,13 @@ public class CatalogoJson implements Catalogo {
     }
 
     @Override
-    public Equipaggiamento getAttrezzo(String nome) {
-        Equipaggiamento attrezzo = attrezziPerNome.get(nome);
-        if (attrezzo == null) {
-            throw new CatalogoException("nel file " + FILE_ATTREZZI + " non c'è l'attrezzo " + nome);
-        }
-        return attrezzo;
+    public List<Attrezzo> getAttrezzi() {
+        return attrezzi;
+    }
+
+    @Override
+    public Optional<Attrezzo> cercaAttrezzo(String nome) {
+        return Optional.ofNullable(attrezziPerNome.get(nome));
     }
 
     /**
@@ -101,12 +107,12 @@ public class CatalogoJson implements Catalogo {
     }
 
     /** Il nome è la chiave con cui si cerca un attrezzo, quindi deve essere unico. */
-    private static Map<String, Equipaggiamento> perNome(List<Equipaggiamento> attrezzi) {
-        Map<String, Equipaggiamento> attrezziPerNome = new HashMap<>();
-        for (Equipaggiamento attrezzo : attrezzi) {
-            if (attrezziPerNome.putIfAbsent(attrezzo.getNomeOggetto(), attrezzo) != null) {
+    private static Map<String, Attrezzo> perNome(List<Attrezzo> attrezzi) {
+        Map<String, Attrezzo> attrezziPerNome = new HashMap<>();
+        for (Attrezzo attrezzo : attrezzi) {
+            if (attrezziPerNome.putIfAbsent(attrezzo.getNome(), attrezzo) != null) {
                 throw new CatalogoException("nel file " + FILE_ATTREZZI + " l'attrezzo "
-                        + attrezzo.getNomeOggetto() + " compare due volte");
+                        + attrezzo.getNome() + " compare due volte");
             }
         }
         return attrezziPerNome;

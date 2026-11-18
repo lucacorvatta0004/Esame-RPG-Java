@@ -22,10 +22,15 @@ final class Validazione {
     }
 
     static void verificaListaNonVuota(List<?> lista, String descrizione) {
-        verificaNonNullo(lista, descrizione);
+        verificaSenzaElementiNull(lista, descrizione);
         if (lista.isEmpty()) {
             throw new IllegalArgumentException(descrizione + " non può essere vuota");
         }
+    }
+
+    // una lista che può essere vuota, ma non null e senza elementi null
+    static void verificaSenzaElementiNull(List<?> lista, String descrizione) {
+        verificaNonNullo(lista, descrizione);
         if (lista.stream().anyMatch(Objects::isNull)) {
             throw new IllegalArgumentException(descrizione + " non può contenere elementi null");
         }

@@ -1,5 +1,7 @@
 package it.unicam.cs.mpgc.rpg130402.model;
 
+import java.util.stream.Collectors;
+
 public class Chef {
     // le vite con cui si inizia e a cui si torna quando si raggiunge un grado nuovo
     private static final int REPUTAZIONE_MASSIMA = 3;
@@ -7,29 +9,23 @@ public class Chef {
     private final String nome;
     private Carriera carriera;
     private int reputazione;
-    private Equipaggiamento strumentoEquipaggiato;
+    private Equipaggiamento equipaggiamento;
 
-    /** Crea un nuovo chef: la carriera parte dal livello 1, quindi dal grado di Commis. */
+    /**
+     * Crea un nuovo chef: la carriera parte dal livello 1, quindi dal grado di Commis.
+     * Non ha ancora attrezzi: li riceve prima del primo servizio (vedi {@link Partita#scegliAttrezzi}).
+     */
     public Chef(String nome) {
         Validazione.verificaTestoNonVuoto(nome, "Il nome dello chef");
         this.nome = nome;
         this.carriera = Carriera.INIZIALE;
         this.reputazione = REPUTAZIONE_MASSIMA;
+        this.equipaggiamento = Equipaggiamento.VUOTO;
     }
 
-    public void equipaggia(Equipaggiamento oggetto) {
-        Validazione.verificaNonNullo(oggetto, "L'equipaggiamento da equipaggiare");
-        this.strumentoEquipaggiato = oggetto;
-        System.out.println(this.nome + " ha equipaggiato: " + oggetto.getNomeOggetto() + "!");
-    }
-
-    /** Le statistiche con cui lo chef cucina adesso: quelle base del livello più i bonus dell'attrezzo. */
+    /** Le statistiche con cui lo chef cucina adesso: quelle base del livello più i bonus di tutti gli attrezzi. */
     public Statistiche getStatisticheEffettive() {
-        Statistiche base = this.carriera.statisticheBase();
-        if (this.strumentoEquipaggiato == null) {
-            return base;
-        }
-        return base.conBonus(this.strumentoEquipaggiato.getBonusMaestria(), this.strumentoEquipaggiato.getBonusVelocita());
+        return this.equipaggiamento.applicaA(this.carriera.statisticheBase());
     }
 
     public void mostraStatistiche() {
@@ -41,6 +37,7 @@ public class Chef {
         System.out.println("ESPERIENZA: " + this.carriera.esperienza() + "/" + this.carriera.esperienzaPerSalire());
         System.out.println("VELOCITÀ: " + effettive.velocita());
         System.out.println("MAESTRIA: " + effettive.maestria());
+        System.out.println("ATTREZZI: " + nomiAttrezzi());
         System.out.println("REPUTAZIONE: " + Testo.conNumero(this.reputazione, "vita", "vite"));
         System.out.println("---------------------------------");
     }
@@ -49,6 +46,7 @@ public class Chef {
     public Carriera getCarriera() { return this.carriera; }
     public Grado getGrado() { return this.carriera.grado(); }
     public int getReputazione() { return this.reputazione; }
+    public Equipaggiamento getEquipaggiamento() { return this.equipaggiamento; }
 
     /**
      * Ripristina i progressi letti da un salvataggio. La carriera è già valida (la controlla il suo costruttore).
@@ -60,6 +58,29 @@ public class Chef {
         Validazione.verificaIntervallo(reputazione, 1, REPUTAZIONE_MASSIMA, "La reputazione salvata");
         this.carriera = carriera;
         this.reputazione = reputazione;
+    }
+
+    /**
+     * Ripristina gli attrezzi letti da un salvataggio: va chiamato dopo {@link #setProgressiSalvati}, perché
+     * controlla la carriera ripristinata. Ogni attrezzo deve essere di un grado che lo chef ha già raggiunto;
+     * può essere di un grado perso con una retrocessione, perché quelli si tolgono solo prima del servizio successivo.
+     *
+     * @throws IllegalArgumentException se un attrezzo è di un grado che lo chef non ha mai raggiunto
+     */
+    public void setAttrezziSalvati(Equipaggiamento equipaggiamento) {
+        Validazione.verificaNonNullo(equipaggiamento, "Gli attrezzi salvati");
+        Grado gradoMassimo = this.carriera.gradoMassimoRaggiunto();
+        if (!equipaggiamento.isSbloccatoDa(gradoMassimo)) {
+            throw new IllegalArgumentException("Gli attrezzi salvati devono essere sbloccati da un grado già raggiunto ("
+                    + gradoMassimo.getNome() + ")");
+        }
+        usaAttrezzi(equipaggiamento);
+    }
+
+    /** Gli attrezzi da usare nel prossimo servizio: li sceglie la {@link Partita}, che li prende tra quelli sbloccati. */
+    void usaAttrezzi(Equipaggiamento equipaggiamento) {
+        Validazione.verificaNonNullo(equipaggiamento, "Gli attrezzi dello chef");
+        this.equipaggiamento = equipaggiamento;
     }
 
     /**
@@ -108,5 +129,11 @@ public class Chef {
 
     public boolean isLicenziato() {
         return this.reputazione <= 0;
+    }
+
+    private String nomiAttrezzi() {
+        return this.equipaggiamento.getAttrezzi().stream()
+                .map(Attrezzo::getNome)
+                .collect(Collectors.joining(", "));
     }
 }
