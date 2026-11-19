@@ -29,8 +29,4 @@ public class Piatto {
         Validazione.verificaAlmeno(velocita, 1, "La velocità");
         return Math.ceilDiv(difficoltaStelle * LAVORO_PER_STELLA, velocita);
     }
-
-    public void mostraDettagli() {
-        System.out.println("Piatto: " + nomePiatto + " | Difficoltà: " + Testo.conNumero(difficoltaStelle, "stella", "stelle") + " (Richiede " + getMaestriaRichiesta() + " maestria)");
-    }
 }

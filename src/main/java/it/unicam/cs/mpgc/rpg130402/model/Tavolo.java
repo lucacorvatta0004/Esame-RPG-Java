@@ -84,6 +84,19 @@ public class Tavolo {
         return andatoVia;
     }
 
+    /** Il tavolo non può più avere tutti i piatti riusciti e in tempo: un piatto è bruciato o il tavolo è andato via. */
+    public boolean isDeluso() {
+        return isAndatoVia() || piattiBruciati() > 0;
+    }
+
+    /**
+     * Al tavolo è seduto l'ispettore Michelin in incognito. Visibile solo nel model: chi guarda il servizio
+     * (la console, la GUI) riceve i tavoli ma non può saperlo; lo scopre alla fine da {@link EsitoServizio#tavoloDellIspettore()}.
+     */
+    boolean isDellIspettore() {
+        return comanda.isDellIspettore();
+    }
+
     /** Il prossimo piatto da preparare, nell'ordine della comanda. */
     Piatto prossimoPiatto() {
         verificaInAttesa();

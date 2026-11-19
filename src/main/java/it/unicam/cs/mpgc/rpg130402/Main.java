@@ -49,7 +49,7 @@ public class Main {
     /**
      * Gioca un servizio dopo l'altro: prima di ogni servizio si scelgono gli attrezzi, poi si mostrano
      * le statistiche con quegli attrezzi. Dopo ogni servizio salva e chiede se continuare;
-     * al game over cancella il salvataggio e la partita finisce.
+     * quando la carriera finisce (game over o vittoria) cancella il salvataggio e la partita finisce.
      */
     private static void giocaPartita(Catalogo catalogo) {
         Scanner tastiera = new Scanner(System.in);
@@ -64,9 +64,9 @@ public class Main {
         while (unAltroServizio) {
             partita.scegliAttrezzi(sceltaAttrezzi);
             annunciaServizio(giocatore);
-            EsitoServizio esito = partita.giocaServizio(sceltaAzione, new OsservatoreServizioDaConsole());
-            if (esito.chefLicenziato()) {
-                System.out.println("\nGAME OVER! Hai perso tutta la reputazione, sei stato licenziato.");
+            EsitoServizio esito = partita.giocaServizio(sceltaAzione, new OsservatoreServizioDaConsole(giocatore.getGrado()));
+            if (esito.statoCarriera().isFinita()) {
+                mostraFineCarriera(esito, giocatore);
                 chiudiCarriera(repository);
                 unAltroServizio = false;
             } else {
@@ -151,6 +151,23 @@ public class Main {
         System.out.println("Esperienza del servizio: " + Testo.conSegno(esito.esperienzaGuadagnata()) + ".");
     }
 
+    /**
+     * Svela l'ispettore Michelin, se era a un tavolo di questo servizio, e dice come è finita la carriera.
+     * Le regole stanno nel model (vedi {@link EsitoServizio#statoCarriera()}): qui ci sono solo i testi.
+     */
+    private static void mostraFineCarriera(EsitoServizio esito, Chef giocatore) {
+        esito.tavoloDellIspettore().ifPresent(tavolo -> System.out.println("\n*** Al Tavolo " + tavolo.getNumero()
+                + " c'era l'ispettore della guida Michelin in incognito! ***"));
+        switch (esito.statoCarriera()) {
+            case RISTORANTE_STELLATO -> System.out.println("VITTORIA! Tutti i suoi piatti sono riusciti e sono arrivati in tempo:\n"
+                    + "il ristorante di " + giocatore.getNome() + " è STELLATO E AUTONOMO. La tua carriera è completa!");
+            case BOCCIATO_DALL_ISPETTORE -> System.out.println("GAME OVER! Con l'ispettore c'è un solo tentativo: niente stella, "
+                    + "la carriera finisce qui (" + Testo.conNumero(giocatore.getReputazione(), "vita rimasta", "vite rimaste") + ").");
+            case LICENZIATO -> System.out.println("\nGAME OVER! Hai perso tutta la reputazione, sei stato licenziato.");
+            case IN_CORSO -> throw new IllegalStateException("La carriera non è finita");
+        }
+    }
+
     private static boolean vuoleUnAltroServizio(Scanner tastiera, Chef giocatore) {
         System.out.println("\nVuoi fare un altro servizio? (scrivi 'si' o 'no')");
         if (rispondeSi(tastiera)) {
@@ -165,11 +182,11 @@ public class Main {
         return tastiera.nextLine().strip().equals("si");
     }
 
-    /** Reputazione 0 = carriera finita: il salvataggio si cancella e la prossima partita riparte da capo. */
+    /** Carriera finita, con un game over o con la vittoria: il salvataggio si cancella e la prossima partita riparte da capo. */
     private static void chiudiCarriera(RepositoryPartita repository) {
         try {
             repository.elimina();
-            System.out.println("Carriera finita: il salvataggio non c'è più, la prossima volta si ricomincia da capo.");
+            System.out.println("Il salvataggio è chiuso: la prossima volta inizierà una nuova carriera.");
         } catch (SalvataggioException e) {
             System.out.println("ERRORE: impossibile cancellare il salvataggio (" + e.getMessage() + ").");
         }

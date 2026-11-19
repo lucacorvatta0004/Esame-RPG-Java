@@ -4,8 +4,9 @@ package it.unicam.cs.mpgc.rpg130402.model;
  * Chi vuole sapere cosa succede durante un servizio, mentre succede: per esempio la console o la GUI che lo mostrano.
  * Il {@link Servizio} chiama questi metodi nel momento in cui le cose accadono; chi li implementa li usa
  * per mostrarle e non può cambiare il servizio (da fuori del model un {@link Tavolo} si può solo leggere).
- * La fine del servizio e il game over non sono qui: li dice l'{@link EsitoServizio}
- * restituito da {@link Partita#giocaServizio}.
+ * La fine del servizio e della carriera (game over o vittoria) non sono qui: le dice l'{@link EsitoServizio}
+ * restituito da {@link Partita#giocaServizio}. Anche quale tavolo è dell'ispettore Michelin si sa solo dall'esito:
+ * durante il servizio l'ispettore è in incognito e i suoi eventi sono uguali a quelli degli altri tavoli.
  */
 public interface OsservatoreServizio {
 

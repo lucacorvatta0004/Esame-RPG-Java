@@ -4,19 +4,35 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * L'ordinazione di un tavolo: il numero del tavolo e i piatti ordinati.
+ * Una comanda può essere dell'ispettore Michelin in incognito: lo sa solo il model
+ * (vedi {@link #isDellIspettore()}), da fuori è una comanda come le altre.
+ */
 public class Comanda {
     private final int numeroTavolo;
     private final List<Piatto> piattiOrdinati;
+    private final boolean dellIspettore;
 
     public Comanda(int numeroTavolo) {
+        this(numeroTavolo, false);
+    }
+
+    private Comanda(int numeroTavolo, boolean dellIspettore) {
         Validazione.verificaAlmeno(numeroTavolo, 1, "Il numero del tavolo");
         this.numeroTavolo = numeroTavolo;
         this.piattiOrdinati = new ArrayList<>();
+        this.dellIspettore = dellIspettore;
     }
 
-    public void aggiungiPiatto(Piatto p) {
-        Validazione.verificaNonNullo(p, "Il piatto da aggiungere alla comanda");
-        this.piattiOrdinati.add(p);
+    /** Una comanda, ancora senza piatti, dell'ispettore Michelin seduto al tavolo dato. */
+    static Comanda dellIspettore(int numeroTavolo) {
+        return new Comanda(numeroTavolo, true);
+    }
+
+    public void aggiungiPiatto(Piatto piatto) {
+        Validazione.verificaNonNullo(piatto, "Il piatto da aggiungere alla comanda");
+        this.piattiOrdinati.add(piatto);
     }
 
     public List<Piatto> getPiattiOrdinati() {
@@ -27,11 +43,8 @@ public class Comanda {
         return this.numeroTavolo;
     }
 
-    public void stampaScontrino() {
-        System.out.println("\n=== ORDINE TAVOLO " + this.numeroTavolo + " ===");
-        for (int i = 0; i < this.piattiOrdinati.size(); i++) {
-            Piatto piattoCorrente = this.piattiOrdinati.get(i);
-            piattoCorrente.mostraDettagli();
-        }
+    /** A ordinare è l'ispettore Michelin. Visibile solo nel model: per il giocatore resta un segreto fino alla fine. */
+    boolean isDellIspettore() {
+        return this.dellIspettore;
     }
 }

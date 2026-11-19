@@ -2,19 +2,43 @@ package it.unicam.cs.mpgc.rpg130402.ui;
 
 import it.unicam.cs.mpgc.rpg130402.model.Carriera;
 import it.unicam.cs.mpgc.rpg130402.model.EsitoPiatto;
+import it.unicam.cs.mpgc.rpg130402.model.Grado;
 import it.unicam.cs.mpgc.rpg130402.model.OsservatoreServizio;
+import it.unicam.cs.mpgc.rpg130402.model.Piatto;
 import it.unicam.cs.mpgc.rpg130402.model.Progresso;
 import it.unicam.cs.mpgc.rpg130402.model.Tavolo;
 import it.unicam.cs.mpgc.rpg130402.model.Testo;
 
-/** Racconta il servizio nel terminale, mentre succede. */
+import java.util.Objects;
+
+/** Racconta un servizio nel terminale, mentre succede. Per ogni servizio se ne crea uno nuovo. */
 public class OsservatoreServizioDaConsole implements OsservatoreServizio {
+    private final Grado gradoDelServizio;
+
+    /**
+     * Il grado è quello con cui lo chef inizia il servizio: serve a segnare i piatti sfida nelle ordinazioni,
+     * perché le comande si preparano con quel grado anche se a metà servizio lo chef cambia grado.
+     */
+    public OsservatoreServizioDaConsole(Grado gradoDelServizio) {
+        this.gradoDelServizio = Objects.requireNonNull(gradoDelServizio, "Il grado del servizio non può essere null");
+    }
 
     @Override
     public void tavoloArrivato(Tavolo tavolo) {
         System.out.println("\nNuovo tavolo! Il Tavolo " + tavolo.getNumero() + " si siede al minuto "
                 + tavolo.getMinutoArrivo() + " e aspetta fino al minuto " + tavolo.getMinutoLimite() + ".");
-        tavolo.getComanda().stampaScontrino();
+        System.out.println("\n=== ORDINE TAVOLO " + tavolo.getNumero() + " ===");
+        tavolo.getComanda().getPiattiOrdinati().forEach(this::mostraPiattoOrdinato);
+    }
+
+    private void mostraPiattoOrdinato(Piatto piatto) {
+        String riga = "Piatto: " + piatto.getNomePiatto() + " | Difficoltà: "
+                + Testo.conNumero(piatto.getDifficoltaStelle(), "stella", "stelle")
+                + " (Richiede " + piatto.getMaestriaRichiesta() + " maestria)";
+        if (gradoDelServizio.isPiattoSfida(piatto)) {
+            riga += " -> PIATTO SFIDA: una stella sopra il tuo grado!";
+        }
+        System.out.println(riga);
     }
 
     @Override

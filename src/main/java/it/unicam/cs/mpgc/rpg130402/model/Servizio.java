@@ -12,6 +12,8 @@ import java.util.Queue;
  * tavolo arrivato tra quelli che aspettano, e ogni piatto fa avanzare l'orologio dei suoi minuti di preparazione.
  * Un piatto iniziato non si interrompe: un tavolo se ne va solo tra un piatto e l'altro.
  * Le azioni si creano all'inizio del servizio, quindi gli usi delle speciali valgono per tutto il servizio.
+ * Il servizio si ferma appena la carriera finisce: con il licenziamento o con il giudizio dell'ispettore Michelin
+ * (vedi {@link EsitoServizio#statoCarriera()}).
  * Si gioca una volta sola, dalla {@link Partita}.
  */
 class Servizio {
@@ -42,7 +44,8 @@ class Servizio {
 
     /**
      * Gioca il servizio e racconta all'osservatore ogni evento mentre accade.
-     * Finisce quando ogni tavolo è stato servito o è andato via, oppure subito quando lo chef viene licenziato.
+     * Finisce quando ogni tavolo è stato servito o è andato via, oppure subito quando la carriera finisce:
+     * lo chef viene licenziato o l'ispettore Michelin ha dato il suo giudizio.
      *
      * @throws IllegalStateException se la scelta restituisce un'azione che non è tra quelle disponibili
      */
@@ -55,13 +58,22 @@ class Servizio {
                 avanza(osservatore);
             }
         }
+        return esitoFinora();
+    }
+
+    /** Il servizio va avanti finché ci sono tavoli da aspettare o da servire e la carriera non è finita. */
+    private boolean isInCorso() {
+        boolean ciSonoTavoli = !tavoliInArrivo.isEmpty() || !tavoliInAttesa.isEmpty();
+        return ciSonoTavoli && !isCarrieraFinita();
+    }
+
+    /** Come è andato il servizio fino a questo momento: la regola della fine della carriera sta nell'esito. */
+    private EsitoServizio esitoFinora() {
         return new EsitoServizio(tavoli, chef.isLicenziato());
     }
 
-    /** Il servizio va avanti finché ci sono tavoli da aspettare o da servire e lo chef non è licenziato. */
-    private boolean isInCorso() {
-        boolean ciSonoTavoli = !tavoliInArrivo.isEmpty() || !tavoliInAttesa.isEmpty();
-        return ciSonoTavoli && !chef.isLicenziato();
+    private boolean isCarrieraFinita() {
+        return esitoFinora().statoCarriera().isFinita();
     }
 
     /** Fa sedere i tavoli che sono arrivati entro il minuto attuale, anche mentre lo chef cucinava. */
@@ -73,10 +85,10 @@ class Servizio {
         }
     }
 
-    /** Ogni tavolo che ha superato il suo minuto limite se ne va e costa una vita; con il game over ci si ferma. */
+    /** Ogni tavolo che ha superato il suo minuto limite se ne va e costa una vita; se la carriera finisce ci si ferma. */
     private void mandaViaTavoliSenzaPazienza(OsservatoreServizio osservatore) {
         Iterator<Tavolo> iteratore = tavoliInAttesa.iterator();
-        while (iteratore.hasNext() && !chef.isLicenziato()) {
+        while (iteratore.hasNext() && !isCarrieraFinita()) {
             Tavolo tavolo = iteratore.next();
             if (tavolo.haFinitoLaPazienza(minuto)) {
                 iteratore.remove();
