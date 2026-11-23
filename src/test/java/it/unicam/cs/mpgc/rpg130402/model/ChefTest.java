@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -18,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@DisplayName("Chef: creazione, statistiche e progressi salvati")
+@DisplayName("Chef: creazione, statistiche, progressi salvati e vite")
 class ChefTest {
     private Chef chef;
     private Attrezzo coltello;
@@ -153,6 +154,65 @@ class ChefTest {
         @DisplayName("un salvataggio senza attrezzi viene accettato")
         void senzaAttrezziAccettato() {
             assertDoesNotThrow(() -> chef.setAttrezziSalvati(Equipaggiamento.VUOTO));
+        }
+    }
+
+    @Nested
+    @DisplayName("Cucinare e vite")
+    class CucinareEVite {
+        private Piatto bruschetta;
+        private Azione cotturaNormale;
+
+        @BeforeEach
+        void preparaPiatto() {
+            // 1 stella = 10 di maestria: lo chef senza attrezzi la riesce sempre con la Cottura normale (+10 XP)
+            bruschetta = new Piatto("Bruschetta al Pomodoro", 1);
+            cotturaNormale = new CotturaNormale();
+        }
+
+        @Test
+        @DisplayName("un piatto bruciato toglie una vita")
+        void piattoBruciatoTogliUnaVita() {
+            // un Commis senza attrezzi ha 10 di maestria, la Carbonara (2 stelle) ne chiede 20
+            EsitoPiatto esito = chef.cucina(new Piatto("Carbonara", 2), cotturaNormale);
+            assertAll(
+                    () -> assertFalse(esito.riuscito()),
+                    () -> assertEquals(2, chef.getReputazione()),
+                    () -> assertEquals(2, esito.reputazioneDopo()));
+        }
+
+        @ParameterizedTest(name = "dal livello {0} con {1} XP si arriva a {2}: vite di nuovo a 3")
+        @CsvSource({"2, 190, CAPO_PARTITA", "4, 390, SOUS_CHEF", "6, 590, CHEF"})
+        @DisplayName("la prima volta che si raggiunge un grado le vite tornano a 3")
+        void primaPromozioneRidaLeVite(int livello, int esperienza, Grado gradoNuovo) {
+            chef.setProgressiSalvati(new Carriera(livello, esperienza, Grado.perLivello(livello)), 1);
+            chef.cucina(bruschetta, cotturaNormale);
+            assertAll(
+                    () -> assertEquals(gradoNuovo, chef.getGrado()),
+                    () -> assertEquals(3, chef.getReputazione()));
+        }
+
+        @Test
+        @DisplayName("tornando a un grado già raggiunto (dopo una retrocessione) le vite restano quelle")
+        void ritornoAUnGradoGiaRaggiuntoNonRidaLeVite() {
+            chef.setProgressiSalvati(new Carriera(2, 190, Grado.CAPO_PARTITA), 1);
+            chef.cucina(bruschetta, cotturaNormale);
+            assertAll(
+                    () -> assertEquals(Grado.CAPO_PARTITA, chef.getGrado()),
+                    () -> assertEquals(1, chef.getReputazione()));
+        }
+
+        @ParameterizedTest(name = "Chef al livello {0} con {1} XP: sale di livello, le vite restano 1")
+        @CsvSource({"6, 590", "7, 690"})
+        @DisplayName("una volta raggiunto lo Chef le vite non tornano più a 3")
+        void daChefLeViteNonTornanoPiu(int livello, int esperienza) {
+            // livello 6 con lo Chef già raggiunto = retrocesso che torna Chef; livello 7 = Chef che sale all'8
+            chef.setProgressiSalvati(new Carriera(livello, esperienza, Grado.CHEF), 1);
+            chef.cucina(bruschetta, cotturaNormale);
+            assertAll(
+                    () -> assertEquals(livello + 1, chef.getCarriera().livello()),
+                    () -> assertEquals(Grado.CHEF, chef.getGrado()),
+                    () -> assertEquals(1, chef.getReputazione()));
         }
     }
 }
