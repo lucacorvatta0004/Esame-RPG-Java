@@ -3,7 +3,6 @@ package it.unicam.cs.mpgc.rpg130402.ui;
 import it.unicam.cs.mpgc.rpg130402.model.Attrezzo;
 import it.unicam.cs.mpgc.rpg130402.model.Equipaggiamento;
 import it.unicam.cs.mpgc.rpg130402.model.SceltaAttrezzi;
-import it.unicam.cs.mpgc.rpg130402.model.Testo;
 
 import java.util.List;
 import java.util.Scanner;

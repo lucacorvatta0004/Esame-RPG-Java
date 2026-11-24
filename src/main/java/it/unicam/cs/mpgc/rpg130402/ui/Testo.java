@@ -1,8 +1,8 @@
-package it.unicam.cs.mpgc.rpg130402.model;
+package it.unicam.cs.mpgc.rpg130402.ui;
 
 /**
  * Piccole regole sui testi mostrati al giocatore, scritte in un solo punto.
- * Sta nel model solo perché alcune stampe sono ancora qui: si sposterà nella ui insieme a loro.
+ * Sta nella ui perché riguarda come si scrivono le cose sullo schermo, non le regole del gioco.
  */
 public final class Testo {
 

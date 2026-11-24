@@ -3,7 +3,6 @@ package it.unicam.cs.mpgc.rpg130402.ui;
 import it.unicam.cs.mpgc.rpg130402.model.Azione;
 import it.unicam.cs.mpgc.rpg130402.model.Piatto;
 import it.unicam.cs.mpgc.rpg130402.model.SceltaAzione;
-import it.unicam.cs.mpgc.rpg130402.model.Testo;
 
 import java.util.List;
 import java.util.OptionalInt;

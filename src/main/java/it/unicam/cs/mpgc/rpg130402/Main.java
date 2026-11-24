@@ -1,6 +1,8 @@
 package it.unicam.cs.mpgc.rpg130402;
 
 import it.unicam.cs.mpgc.rpg130402.model.Attrezzatura;
+import it.unicam.cs.mpgc.rpg130402.model.Attrezzo;
+import it.unicam.cs.mpgc.rpg130402.model.Carriera;
 import it.unicam.cs.mpgc.rpg130402.model.Chef;
 import it.unicam.cs.mpgc.rpg130402.model.Cucina;
 import it.unicam.cs.mpgc.rpg130402.model.EsitoServizio;
@@ -8,8 +10,8 @@ import it.unicam.cs.mpgc.rpg130402.model.Menu;
 import it.unicam.cs.mpgc.rpg130402.model.Partita;
 import it.unicam.cs.mpgc.rpg130402.model.SceltaAttrezzi;
 import it.unicam.cs.mpgc.rpg130402.model.SceltaAzione;
+import it.unicam.cs.mpgc.rpg130402.model.Statistiche;
 import it.unicam.cs.mpgc.rpg130402.model.Tavolo;
-import it.unicam.cs.mpgc.rpg130402.model.Testo;
 import it.unicam.cs.mpgc.rpg130402.persistence.Catalogo;
 import it.unicam.cs.mpgc.rpg130402.persistence.CatalogoException;
 import it.unicam.cs.mpgc.rpg130402.persistence.CatalogoJson;
@@ -19,10 +21,12 @@ import it.unicam.cs.mpgc.rpg130402.persistence.SalvataggioException;
 import it.unicam.cs.mpgc.rpg130402.ui.OsservatoreServizioDaConsole;
 import it.unicam.cs.mpgc.rpg130402.ui.SceltaAttrezziDaConsole;
 import it.unicam.cs.mpgc.rpg130402.ui.SceltaAzioneDaConsole;
+import it.unicam.cs.mpgc.rpg130402.ui.Testo;
 
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 public class Main {
 
@@ -85,11 +89,33 @@ public class Main {
     }
 
     private static void annunciaServizio(Chef giocatore) {
-        giocatore.mostraStatistiche();
+        mostraStatistiche(giocatore);
         System.out.println("\n=== INIZIO SERVIZIO ===");
         System.out.println("Oggi arrivano " + Testo.conNumero(giocatore.getGrado().getTavoliPerServizio(), "tavolo", "tavoli")
                 + ", uno ogni " + Tavolo.MINUTI_TRA_DUE_ARRIVI + " minuti. Ogni tavolo aspetta al massimo "
                 + Tavolo.PAZIENZA_IN_MINUTI + " minuti da quando si siede.");
+    }
+
+    /** Le statistiche dello chef lette con i suoi getter: lo chef non sa come vengono mostrate. */
+    private static void mostraStatistiche(Chef giocatore) {
+        Carriera carriera = giocatore.getCarriera();
+        Statistiche effettive = giocatore.getStatisticheEffettive();
+        System.out.println("---------------------------------");
+        System.out.println("NOME: " + giocatore.getNome());
+        System.out.println("GRADO: " + giocatore.getGrado().getNome());
+        System.out.println("LIVELLO: " + carriera.livello());
+        System.out.println("ESPERIENZA: " + carriera.esperienza() + "/" + carriera.esperienzaPerSalire());
+        System.out.println("VELOCITÀ: " + effettive.velocita());
+        System.out.println("MAESTRIA: " + effettive.maestria());
+        System.out.println("ATTREZZI: " + nomiAttrezzi(giocatore));
+        System.out.println("REPUTAZIONE: " + Testo.conNumero(giocatore.getReputazione(), "vita", "vite"));
+        System.out.println("---------------------------------");
+    }
+
+    private static String nomiAttrezzi(Chef giocatore) {
+        return giocatore.getEquipaggiamento().getAttrezzi().stream()
+                .map(Attrezzo::getNome)
+                .collect(Collectors.joining(", "));
     }
 
     /** Carica lo chef salvato oppure ne crea uno nuovo: restituisce sempre uno chef. */

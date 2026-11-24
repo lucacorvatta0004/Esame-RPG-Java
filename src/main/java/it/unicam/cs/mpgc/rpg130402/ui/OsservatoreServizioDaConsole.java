@@ -7,7 +7,6 @@ import it.unicam.cs.mpgc.rpg130402.model.OsservatoreServizio;
 import it.unicam.cs.mpgc.rpg130402.model.Piatto;
 import it.unicam.cs.mpgc.rpg130402.model.Progresso;
 import it.unicam.cs.mpgc.rpg130402.model.Tavolo;
-import it.unicam.cs.mpgc.rpg130402.model.Testo;
 
 import java.util.Objects;
 

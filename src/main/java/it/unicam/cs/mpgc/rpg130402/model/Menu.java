@@ -96,8 +96,8 @@ public class Menu {
                 .filter(piatto -> piatto.getDifficoltaStelle() <= stelleMassime)
                 .toList();
         if (piattiAdatti.isEmpty()) {
-            throw new IllegalStateException("Nel menu non ci sono piatti da " + stelleMinime + " a "
-                    + Testo.conNumero(stelleMassime, "stella", "stelle"));
+            throw new IllegalStateException("Nel menu non ci sono piatti con stelle da "
+                    + stelleMinime + " a " + stelleMassime);
         }
         return piattiAdatti;
     }

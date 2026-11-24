@@ -1,7 +1,5 @@
 package it.unicam.cs.mpgc.rpg130402.model;
 
-import java.util.stream.Collectors;
-
 public class Chef {
     // le vite con cui si inizia e a cui si torna quando si raggiunge un grado nuovo
     private static final int REPUTAZIONE_MASSIMA = 3;
@@ -26,20 +24,6 @@ public class Chef {
     /** Le statistiche con cui lo chef cucina adesso: quelle base del livello più i bonus di tutti gli attrezzi. */
     public Statistiche getStatisticheEffettive() {
         return this.equipaggiamento.applicaA(this.carriera.statisticheBase());
-    }
-
-    public void mostraStatistiche() {
-        Statistiche effettive = getStatisticheEffettive();
-        System.out.println("---------------------------------");
-        System.out.println("NOME: " + this.nome);
-        System.out.println("GRADO: " + getGrado().getNome());
-        System.out.println("LIVELLO: " + this.carriera.livello());
-        System.out.println("ESPERIENZA: " + this.carriera.esperienza() + "/" + this.carriera.esperienzaPerSalire());
-        System.out.println("VELOCITÀ: " + effettive.velocita());
-        System.out.println("MAESTRIA: " + effettive.maestria());
-        System.out.println("ATTREZZI: " + nomiAttrezzi());
-        System.out.println("REPUTAZIONE: " + Testo.conNumero(this.reputazione, "vita", "vite"));
-        System.out.println("---------------------------------");
     }
 
     public String getNome() { return this.nome; }
@@ -129,11 +113,5 @@ public class Chef {
 
     public boolean isLicenziato() {
         return this.reputazione <= 0;
-    }
-
-    private String nomiAttrezzi() {
-        return this.equipaggiamento.getAttrezzi().stream()
-                .map(Attrezzo::getNome)
-                .collect(Collectors.joining(", "));
     }
 }
