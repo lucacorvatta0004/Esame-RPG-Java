@@ -23,7 +23,16 @@ public class Chef {
 
     /** Le statistiche con cui lo chef cucina adesso: quelle base del livello più i bonus di tutti gli attrezzi. */
     public Statistiche getStatisticheEffettive() {
-        return this.equipaggiamento.applicaA(this.carriera.statisticheBase());
+        return getStatisticheCon(this.equipaggiamento);
+    }
+
+    /**
+     * Le statistiche che lo chef avrebbe con gli attrezzi dati: quelle base del livello più i loro bonus.
+     * Non cambia gli attrezzi dello chef: serve per mostrare una scelta prima di confermarla.
+     */
+    public Statistiche getStatisticheCon(Equipaggiamento equipaggiamento) {
+        Validazione.verificaNonNullo(equipaggiamento, "Gli attrezzi con cui calcolare le statistiche");
+        return equipaggiamento.applicaA(this.carriera.statisticheBase());
     }
 
     public String getNome() { return this.nome; }

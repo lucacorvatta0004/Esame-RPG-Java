@@ -36,11 +36,20 @@ public class Partita {
     public void scegliAttrezzi(SceltaAttrezzi sceltaAttrezzi) {
         verificaCarrieraInCorso();
         Validazione.verificaNonNullo(sceltaAttrezzi, "La scelta degli attrezzi");
-        List<Attrezzo> attrezzi = cucina.attrezzatura().sbloccatiPerTipo(chef.getGrado()).stream()
+        List<Attrezzo> attrezzi = getAttrezziSbloccatiPerTipo().stream()
                 .map(attrezziDelTipo -> scegliAttrezzo(attrezziDelTipo, sceltaAttrezzi))
                 .toList();
         chef.usaAttrezzi(new Equipaggiamento(attrezzi));
         attrezziScelti = true;
+    }
+
+    /**
+     * Gli attrezzi tra cui scegliere prima del prossimo servizio, con il grado che lo chef ha adesso:
+     * una lista per ogni tipo che ne ha almeno uno sbloccato, nell'ordine dei tipi. Serve a chi mostra
+     * la scelta prima di confermarla (per esempio la GUI); sono gli stessi che usa {@link #scegliAttrezzi}.
+     */
+    public List<List<Attrezzo>> getAttrezziSbloccatiPerTipo() {
+        return cucina.attrezzatura().sbloccatiPerTipo(chef.getGrado());
     }
 
     /**

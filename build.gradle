@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'application'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
 }
 
 group = 'it.unicam.cs.mpgc'
@@ -14,6 +15,12 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(25)
     }
+}
+
+// la GUI: controls per pulsanti, caselle e tendine (porta con sé graphics), fxml per le schermate scritte in FXML
+javafx {
+    version = "25.0.3"
+    modules = ['javafx.controls', 'javafx.fxml']
 }
 
 dependencies {

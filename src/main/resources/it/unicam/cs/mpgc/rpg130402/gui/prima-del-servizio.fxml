@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.VBox?>
+
+<!-- Schermata 2: prima del servizio. Le righe degli attrezzi le aggiunge il controller, perché dipendono dal grado. -->
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="it.unicam.cs.mpgc.rpg130402.gui.PrimaDelServizioController"
+      spacing="15" prefWidth="420">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <TitledPane text="Chef" collapsible="false">
+        <GridPane hgap="10" vgap="5">
+            <Label text="Nome:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+            <Label fx:id="nome" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+            <Label text="Grado:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+            <Label fx:id="grado" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+            <Label text="Livello:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+            <Label fx:id="livello" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+            <Label text="Esperienza:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+            <Label fx:id="esperienza" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+            <Label text="Vite:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+            <Label fx:id="vite" textFill="red" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+            <Label text="Maestria:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+            <Label fx:id="maestria" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+            <Label text="Velocità:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+            <Label fx:id="velocita" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+        </GridPane>
+    </TitledPane>
+
+    <TitledPane text="Attrezzi" collapsible="false">
+        <GridPane fx:id="elencoAttrezzi" hgap="10" vgap="5"/>
+    </TitledPane>
+
+    <Label fx:id="tavoliDiOggi" wrapText="true"/>
+    <Button fx:id="iniziaServizio" text="Inizia il servizio" onAction="#iniziaIlServizio"/>
+</VBox>

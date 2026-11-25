@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<!-- Schermata 1: inizio. I nodi con visible="false" li mostra il controller solo quando servono. -->
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="it.unicam.cs.mpgc.rpg130402.gui.InizioController"
+      spacing="15" prefWidth="420">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Label text="Battle of the Brigata">
+        <font>
+            <Font size="26"/>
+        </font>
+    </Label>
+
+    <Label fx:id="salvataggioNonValido" wrapText="true" visible="false" managed="false"/>
+
+    <TitledPane fx:id="riquadroCarrieraSalvata" text="Carriera salvata" collapsible="false"
+                visible="false" managed="false">
+        <VBox spacing="10">
+            <Label fx:id="datiCarrieraSalvata"/>
+            <Button text="Continua la carriera" onAction="#continuaLaCarriera"/>
+        </VBox>
+    </TitledPane>
+
+    <TitledPane text="Nuova carriera" collapsible="false">
+        <VBox spacing="10">
+            <Label text="Nome dello chef"/>
+            <TextField fx:id="campoNome"/>
+            <Label fx:id="erroreNome" textFill="red" wrapText="true" visible="false" managed="false"/>
+            <Label fx:id="avvisoSostituzione" wrapText="true" visible="false" managed="false"/>
+            <Button text="Inizia" onAction="#iniziaNuovaCarriera"/>
+        </VBox>
+    </TitledPane>
+</VBox>

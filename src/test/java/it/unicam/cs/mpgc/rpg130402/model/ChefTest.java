@@ -71,6 +71,26 @@ class ChefTest {
         void attrezziNullRifiutati() {
             assertThrows(IllegalArgumentException.class, () -> chef.usaAttrezzi(null));
         }
+
+        @Test
+        @DisplayName("le statistiche con altri attrezzi si calcolano senza cambiare quelli in uso")
+        void statisticheConAltriAttrezzi() {
+            Equipaggiamento soloIlColtello = new Equipaggiamento(List.of(coltello));
+            chef.usaAttrezzi(soloIlColtello);
+            chef.setProgressiSalvati(new Carriera(3, 0, Grado.CAPO_PARTITA), 3);
+            Equipaggiamento conLaPadellaInRame = new Equipaggiamento(List.of(coltello, AttrezziDelGioco.padellaInRame()));
+            assertAll(
+                    () -> assertEquals(new Statistiche(40, 24), chef.getStatisticheCon(conLaPadellaInRame)),
+                    () -> assertEquals(new Statistiche(20, 14), chef.getStatisticheCon(Equipaggiamento.VUOTO)),
+                    () -> assertSame(soloIlColtello, chef.getEquipaggiamento()),
+                    () -> assertEquals(new Statistiche(35, 24), chef.getStatisticheEffettive()));
+        }
+
+        @Test
+        @DisplayName("le statistiche non si calcolano con attrezzi null")
+        void statisticheConAttrezziNullRifiutate() {
+            assertThrows(IllegalArgumentException.class, () -> chef.getStatisticheCon(null));
+        }
     }
 
     @Nested
