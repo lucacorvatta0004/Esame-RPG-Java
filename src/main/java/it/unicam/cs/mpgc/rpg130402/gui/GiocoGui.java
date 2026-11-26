@@ -63,9 +63,19 @@ public class GiocoGui extends Application {
 
     /** Lo chef scelto nella schermata iniziale gioca la sua partita con la cucina del catalogo. */
     private void mostraPrimaDelServizio(Chef chef) {
+        Partita partita = new Partita(chef, cucina);
         FXMLLoader caricatore = carica("prima-del-servizio.fxml");
         PrimaDelServizioController controller = caricatore.getController();
-        controller.inizializza(chef, new Partita(chef, cucina));
+        controller.inizializza(chef, partita);
+        controller.setAvviaServizio(() -> mostraServizio(chef, partita));
+        mostra(caricatore);
+    }
+
+    /** Dopo la scelta degli attrezzi: la schermata del servizio, che fa partire il servizio della partita. */
+    private void mostraServizio(Chef chef, Partita partita) {
+        FXMLLoader caricatore = carica("servizio.fxml");
+        ServizioController controller = caricatore.getController();
+        controller.inizializza(chef, partita);
         mostra(caricatore);
     }
 

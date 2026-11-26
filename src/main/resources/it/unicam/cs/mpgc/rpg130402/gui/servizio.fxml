@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<!-- Schermata 3: il servizio. I testi li scrive il controller a ogni evento; i pulsanti delle azioni li crea lui, uno per azione. -->
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="it.unicam.cs.mpgc.rpg130402.gui.ServizioController"
+      spacing="15" prefWidth="780">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <HBox spacing="30">
+        <Label fx:id="minuto">
+            <font>
+                <Font size="18"/>
+            </font>
+        </Label>
+        <HBox spacing="5">
+            <Label text="Vite:">
+                <font>
+                    <Font size="18"/>
+                </font>
+            </Label>
+            <Label fx:id="vite" textFill="red">
+                <font>
+                    <Font size="18"/>
+                </font>
+            </Label>
+        </HBox>
+    </HBox>
+
+    <HBox spacing="15">
+        <TitledPane text="Tavoli" collapsible="false">
+            <ListView fx:id="tavoli" prefWidth="320" prefHeight="200"/>
+        </TitledPane>
+        <TitledPane fx:id="riquadroPiatto" text="Prossimo piatto" collapsible="false" HBox.hgrow="ALWAYS">
+            <VBox spacing="8">
+                <Label fx:id="nomePiatto">
+                    <font>
+                        <Font size="16"/>
+                    </font>
+                </Label>
+                <Label fx:id="dettagliPiatto"/>
+                <VBox fx:id="azioni" spacing="5"/>
+            </VBox>
+        </TitledPane>
+    </HBox>
+
+    <TitledPane text="Cronaca" collapsible="false">
+        <ListView fx:id="cronaca" prefHeight="220"/>
+    </TitledPane>
+</VBox>

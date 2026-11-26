@@ -11,7 +11,6 @@ import it.unicam.cs.mpgc.rpg130402.model.TipoAttrezzo;
 import it.unicam.cs.mpgc.rpg130402.ui.Testo;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
@@ -27,6 +26,7 @@ import java.util.stream.Stream;
  * Il controller della schermata prima del servizio (prima-del-servizio.fxml): mostra lo chef e gli attrezzi
  * sbloccati, e per ogni tipo con più attrezzi una tendina. Maestria e velocità le calcola il model
  * con gli attrezzi selezionati ({@link Chef#getStatisticheCon}); la scelta si applica con {@link Partita#scegliAttrezzi}.
+ * Questa schermata non sa quale schermata viene dopo: alla fine chiama l'azione ricevuta con {@link #setAvviaServizio}.
  */
 public class PrimaDelServizioController {
     @FXML
@@ -47,11 +47,10 @@ public class PrimaDelServizioController {
     private GridPane elencoAttrezzi;
     @FXML
     private Label tavoliDiOggi;
-    @FXML
-    private Button iniziaServizio;
 
     private Chef chef;
     private Partita partita;
+    private Runnable avviaServizio;
     private final List<Attrezzo> attrezziUnici = new ArrayList<>();
     private final Map<TipoAttrezzo, ComboBox<Attrezzo>> tendine = new EnumMap<>(TipoAttrezzo.class);
 
@@ -64,6 +63,11 @@ public class PrimaDelServizioController {
         tavoliDiOggi.setText("Oggi arrivano " + Testo.conNumero(chef.getGrado().getTavoliPerServizio(), "tavolo", "tavoli")
                 + ", uno ogni " + Tavolo.MINUTI_TRA_DUE_ARRIVI + " minuti. Ogni tavolo aspetta al massimo "
                 + Tavolo.PAZIENZA_IN_MINUTI + " minuti.");
+    }
+
+    /** Cosa fare dopo che la scelta degli attrezzi è stata applicata: per esempio aprire la schermata del servizio. */
+    public void setAvviaServizio(Runnable avviaServizio) {
+        this.avviaServizio = avviaServizio;
     }
 
     private void mostraChef() {
@@ -138,14 +142,12 @@ public class PrimaDelServizioController {
 
     /**
      * Applica alla partita gli attrezzi scelti: per ogni tipo con più attrezzi la partita chiede quale usare
-     * e la risposta è quello selezionato nella tendina. Poi la scelta non si cambia più.
-     * La schermata del servizio arriva nella prossima sessione.
+     * e la risposta è quello selezionato nella tendina. Poi parte il servizio.
      */
     @FXML
     private void iniziaIlServizio() {
         partita.scegliAttrezzi((attrezziDelTipo, equipaggiamentoAttuale) ->
                 tendine.get(attrezziDelTipo.getFirst().getTipo()).getValue());
-        iniziaServizio.setDisable(true);
-        tendine.values().forEach(tendina -> tendina.setDisable(true));
+        avviaServizio.run();
     }
 }

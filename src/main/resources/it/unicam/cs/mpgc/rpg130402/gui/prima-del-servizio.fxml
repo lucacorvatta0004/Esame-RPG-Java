@@ -39,5 +39,5 @@
     </TitledPane>
 
     <Label fx:id="tavoliDiOggi" wrapText="true"/>
-    <Button fx:id="iniziaServizio" text="Inizia il servizio" onAction="#iniziaIlServizio"/>
+    <Button text="Inizia il servizio" onAction="#iniziaIlServizio"/>
 </VBox>
