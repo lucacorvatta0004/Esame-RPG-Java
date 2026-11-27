@@ -4,6 +4,7 @@ import it.unicam.cs.mpgc.rpg130402.model.EsitoPiatto;
 import it.unicam.cs.mpgc.rpg130402.model.EsitoServizio;
 import it.unicam.cs.mpgc.rpg130402.model.OsservatoreServizio;
 import it.unicam.cs.mpgc.rpg130402.model.Tavolo;
+import it.unicam.cs.mpgc.rpg130402.ui.MessaggiDelProgresso;
 import it.unicam.cs.mpgc.rpg130402.ui.Testo;
 import javafx.application.Platform;
 
@@ -71,6 +72,7 @@ class OsservatoreServizioDaGui implements OsservatoreServizio {
         } else {
             racconta("Piatto bruciato: " + nome + " (" + esitoPiatto.motivo() + "), " + tempoEdEsperienza + ", -1 vita.");
         }
+        MessaggiDelProgresso.di(esitoPiatto).forEach(this::racconta);
         String testoMinuto = testoMinuto(minuto);
         String testoVite = testoVite(esitoPiatto.reputazioneDopo());
         Platform.runLater(() -> {

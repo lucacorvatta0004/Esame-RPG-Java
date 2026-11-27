@@ -1,7 +1,9 @@
 package it.unicam.cs.mpgc.rpg130402.gui;
 
 import it.unicam.cs.mpgc.rpg130402.model.Chef;
+import it.unicam.cs.mpgc.rpg130402.model.EsitoServizio;
 import it.unicam.cs.mpgc.rpg130402.model.Partita;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -12,13 +14,14 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Il controller della schermata del servizio (servizio.fxml). Il servizio è lo stesso della console
  * ({@link Partita#giocaServizio}), ma gira in un thread a parte: mentre aspetta il clic del giocatore,
  * ad aspettare è quel thread e non quello di JavaFX, così la finestra non si blocca.
  * Gli eventi del servizio arrivano con {@link OsservatoreServizioDaGui}, la scelta dell'azione con {@link SceltaAzioneDaGui}.
- * Tutti i metodi di questa classe girano sul thread JavaFX e ricevono solo testi già pronti.
+ * Durante il servizio i metodi di questa classe girano sul thread JavaFX e ricevono solo testi già pronti.
  */
 public class ServizioController {
     @FXML
@@ -39,6 +42,7 @@ public class ServizioController {
     private ListView<String> cronaca;
 
     private SceltaAzioneDaGui sceltaAzione;
+    private Consumer<EsitoServizio> fineServizio;
 
     /** Il testo di un pulsante e la descrizione dell'azione, mostrata nel tooltip. */
     record PulsanteAzione(String testo, String descrizione) {
@@ -55,9 +59,38 @@ public class ServizioController {
         OsservatoreServizioDaGui osservatore = new OsservatoreServizioDaGui(this, chef.getGrado().getTavoliPerServizio());
         this.sceltaAzione = scelta;
 
-        Thread threadDelServizio = new Thread(() -> osservatore.servizioFinito(partita.giocaServizio(scelta, osservatore)));
+        Thread threadDelServizio = new Thread(() -> servizioFinito(partita.giocaServizio(scelta, osservatore), osservatore));
         threadDelServizio.setDaemon(true);
         threadDelServizio.start();
+    }
+
+    /**
+     * Cosa fare appena il servizio finisce, se la carriera continua: per esempio salvare e preparare la schermata
+     * di fine servizio, da aprire con il pulsante "Continua" (vedi {@link #mostraContinua}).
+     * Questa schermata non sa quale schermata viene dopo.
+     */
+    public void setFineServizio(Consumer<EsitoServizio> fineServizio) {
+        this.fineServizio = fineServizio;
+    }
+
+    /**
+     * L'ultima cosa che fa il thread del servizio: la riga "Servizio finito" in cronaca. Se la carriera continua,
+     * passa l'esito al thread JavaFX con Platform.runLater: da lì in poi il model lo usa solo lui, perché il servizio
+     * è finito. Se la carriera è finita restano i pulsanti spenti (la schermata di fine carriera arriva dopo).
+     */
+    private void servizioFinito(EsitoServizio esito, OsservatoreServizioDaGui osservatore) {
+        osservatore.servizioFinito(esito);
+        if (!esito.statoCarriera().isFinita()) {
+            Platform.runLater(() -> fineServizio.accept(esito));
+        }
+    }
+
+    /** Al posto dei pulsanti delle mosse un solo pulsante "Continua", che esegue l'azione ricevuta (per esempio la schermata dopo). */
+    public void mostraContinua(Runnable continua) {
+        Button bottone = new Button("Continua");
+        bottone.setOnAction(evento -> continua.run());
+        azioni.getChildren().setAll(bottone);
+        azioni.setDisable(false);
     }
 
     void mostraMinuto(String testo) {
@@ -108,7 +141,7 @@ public class ServizioController {
         sceltaAzione.azioneScelta(numeroAzione);
     }
 
-    /** L'ultima riga della cronaca; i pulsanti restano spenti. Il passaggio alla schermata di fine servizio arriva dopo. */
+    /** L'ultima riga della cronaca; i pulsanti delle mosse si spengono. */
     void mostraFineServizio(String riga) {
         aggiungiAllaCronaca(riga);
         mostraTitoloPiatto("Nessun altro piatto");

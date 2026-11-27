@@ -3,6 +3,7 @@ package it.unicam.cs.mpgc.rpg130402.gui;
 import it.unicam.cs.mpgc.rpg130402.model.Attrezzatura;
 import it.unicam.cs.mpgc.rpg130402.model.Chef;
 import it.unicam.cs.mpgc.rpg130402.model.Cucina;
+import it.unicam.cs.mpgc.rpg130402.model.EsitoServizio;
 import it.unicam.cs.mpgc.rpg130402.model.Menu;
 import it.unicam.cs.mpgc.rpg130402.model.Partita;
 import it.unicam.cs.mpgc.rpg130402.persistence.Catalogo;
@@ -30,6 +31,10 @@ import java.nio.file.Path;
 public class GiocoGui extends Application {
     private Stage finestra;
     private Cucina cucina;
+    private RepositoryPartita repository;
+    // la carriera scelta nella schermata iniziale: a ogni avvio se ne gioca una sola, un servizio dopo l'altro
+    private Chef chef;
+    private Partita partita;
 
     /**
      * Come in console: se i dati fissi del gioco mancano o sono rovinati si mostra il problema e si esce,
@@ -47,36 +52,57 @@ public class GiocoGui extends Application {
         }
         this.finestra = finestra;
         this.cucina = new Cucina(new Menu(catalogo.getPiatti()), new Attrezzatura(catalogo.getAttrezzi()));
-        RepositoryPartita repository = new RepositoryPartitaJson(Path.of("salvataggio.json"), catalogo);
+        this.repository = new RepositoryPartitaJson(Path.of("salvataggio.json"), catalogo);
 
         finestra.setTitle("Battle of the Brigata");
-        mostraInizio(repository);
+        mostraInizio();
         finestra.show();
     }
 
-    private void mostraInizio(RepositoryPartita repository) {
+    private void mostraInizio() {
         FXMLLoader caricatore = carica("inizio.fxml");
         InizioController controller = caricatore.getController();
-        controller.inizializza(repository, this::mostraPrimaDelServizio);
+        controller.inizializza(repository, this::iniziaCarriera);
         mostra(caricatore);
     }
 
     /** Lo chef scelto nella schermata iniziale gioca la sua partita con la cucina del catalogo. */
-    private void mostraPrimaDelServizio(Chef chef) {
-        Partita partita = new Partita(chef, cucina);
+    private void iniziaCarriera(Chef chefScelto) {
+        this.chef = chefScelto;
+        this.partita = new Partita(chefScelto, cucina);
+        mostraPrimaDelServizio();
+    }
+
+    /** Prima di ogni servizio: statistiche e attrezzi dello chef di adesso, poi la schermata del servizio. */
+    private void mostraPrimaDelServizio() {
         FXMLLoader caricatore = carica("prima-del-servizio.fxml");
         PrimaDelServizioController controller = caricatore.getController();
         controller.inizializza(chef, partita);
-        controller.setAvviaServizio(() -> mostraServizio(chef, partita));
+        controller.setAvviaServizio(this::mostraServizio);
         mostra(caricatore);
     }
 
     /** Dopo la scelta degli attrezzi: la schermata del servizio, che fa partire il servizio della partita. */
-    private void mostraServizio(Chef chef, Partita partita) {
+    private void mostraServizio() {
         FXMLLoader caricatore = carica("servizio.fxml");
         ServizioController controller = caricatore.getController();
         controller.inizializza(chef, partita);
+        controller.setFineServizio(esito -> controller.mostraContinua(preparaFineServizio(esito)));
         mostra(caricatore);
+    }
+
+    /**
+     * Il servizio è appena finito e la carriera continua: come in console si salva subito. La schermata di fine
+     * servizio si prepara adesso e si apre con "Continua": restituisce l'azione che la mostra.
+     * Da lì "Un altro servizio" riporta alla schermata prima del servizio con la stessa partita.
+     */
+    private Runnable preparaFineServizio(EsitoServizio esito) {
+        FXMLLoader caricatore = carica("fine-servizio.fxml");
+        FineServizioController controller = caricatore.getController();
+        controller.inizializza(esito, chef.getCarriera());
+        controller.salva(repository, chef);
+        controller.setUnAltroServizio(this::mostraPrimaDelServizio);
+        return () -> mostra(caricatore);
     }
 
     /**

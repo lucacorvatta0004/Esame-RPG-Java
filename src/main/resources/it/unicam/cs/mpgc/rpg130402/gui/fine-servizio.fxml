@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<!-- Schermata 4: fine servizio, quando la carriera continua. I numeri e il colore dell'esperienza li mette il controller. -->
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="it.unicam.cs.mpgc.rpg130402.gui.FineServizioController"
+      spacing="15" prefWidth="420">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Label text="Servizio finito">
+        <font>
+            <Font size="26"/>
+        </font>
+    </Label>
+    <Label fx:id="tavoliUsciti" wrapText="true"/>
+
+    <Label fx:id="tavoliServiti" maxWidth="Infinity" wrapText="true"
+           style="-fx-border-color: lightgray; -fx-border-radius: 5; -fx-padding: 10;">
+        <font>
+            <Font size="16"/>
+        </font>
+    </Label>
+    <Label fx:id="tavoliAndatiVia" maxWidth="Infinity" wrapText="true"
+           style="-fx-border-color: lightgray; -fx-border-radius: 5; -fx-padding: 10;">
+        <font>
+            <Font size="16"/>
+        </font>
+    </Label>
+
+    <VBox fx:id="riquadroEsperienza" alignment="CENTER" spacing="5">
+        <padding>
+            <Insets top="15" right="15" bottom="15" left="15"/>
+        </padding>
+        <Label text="Esperienza guadagnata">
+            <font>
+                <Font size="16"/>
+            </font>
+        </Label>
+        <Label fx:id="esperienzaGuadagnata">
+            <font>
+                <Font name="System Bold" size="44"/>
+            </font>
+        </Label>
+        <Label fx:id="livelloEdEsperienza"/>
+    </VBox>
+
+    <Label fx:id="salvataggio" wrapText="true">
+        <font>
+            <Font size="11"/>
+        </font>
+    </Label>
+    <HBox spacing="10">
+        <Button text="Un altro servizio" onAction="#iniziaUnAltroServizio"/>
+        <Button text="Esci" onAction="#esci"/>
+    </HBox>
+</VBox>

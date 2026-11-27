@@ -89,30 +89,6 @@ public class OsservatoreServizioDaConsole implements OsservatoreServizio {
         System.out.println("Esperienza: " + Testo.conSegno(progresso.esperienzaGuadagnata())
                 + " (" + carriera.esperienza() + "/" + carriera.esperienzaPerSalire()
                 + " per salire al livello " + (carriera.livello() + 1) + ")");
-
-        if (progresso.isSalitoDiLivello()) {
-            System.out.println("Sei salito al livello " + carriera.livello() + "!");
-        }
-        if (progresso.isScesoDiLivello()) {
-            System.out.println("Sei sceso al livello " + carriera.livello() + ".");
-        }
-        if (progresso.isPromosso()) {
-            mostraPromozione(esitoPiatto);
-        }
-        if (progresso.isRetrocesso()) {
-            System.out.println("Retrocesso a " + carriera.grado().getNome() + ". Dal prossimo servizio non hai più "
-                    + "le mosse e gli attrezzi da " + progresso.prima().grado().getNome() + ".");
-        }
-    }
-
-    /** Le vite tornano solo se il grado è nuovo: tornare a un grado già raggiunto non le ridà. */
-    private void mostraPromozione(EsitoPiatto esitoPiatto) {
-        Progresso progresso = esitoPiatto.progresso();
-        String messaggio = "Promosso a " + progresso.dopo().grado().getNome() + "!";
-        if (progresso.isNuovoGradoRaggiunto()) {
-            messaggio += " Vite di nuovo a " + esitoPiatto.reputazioneDopo() + ".";
-        }
-        System.out.println(messaggio);
-        System.out.println("Le mosse e gli attrezzi nuovi arrivano dal prossimo servizio.");
+        MessaggiDelProgresso.di(esitoPiatto).forEach(System.out::println);
     }
 }
